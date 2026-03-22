@@ -1,0 +1,52 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(~/.claude/**)",
+      "Grep"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/check-test-modification.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/enforce-tdd.py",
+            "statusMessage": "Checking TDD compliance..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/reset-tdd-on-commit.py"
+          }
+        ]
+      },
+      {
+        "matcher": "WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/check-webfetch.js",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash -c 'tee /tmp/statusline-input.json | bash ~/.claude/statusline-command.sh'"
+  },
+  "enabledPlugins": {
+    "chrome-devtools-mcp@chrome-devtools-plugins": true
+  }
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Markdown to PDF Skill
+# Converts Markdown files to PDF via Pandoc with automatic list formatting validation
+
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Run converter from skill directory
+exec python3 "$SKILL_DIR/converter.py" "$@"

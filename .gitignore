@@ -1,0 +1,45 @@
+# Session transcripts and conversation history — contain full prompts/responses, potentially sensitive
+projects/
+sessions/
+history.jsonl
+
+# Transient runtime state
+cache/
+debug/
+paste-cache/
+shell-snapshots/
+session-env/
+tasks/
+file-history/
+plans/
+todos/
+*.lock
+*.lock.lock
+
+# Telemetry and analytics — machine-generated, no config value
+telemetry/
+statsig/
+stats-cache.json
+cost-history.log
+
+# IDE integration state
+ide/
+
+# Downloads — binary/temporary artifacts
+downloads/
+
+# Remote settings — fetched from Anthropic, not user-authored
+remote-settings.json
+
+# Nested .claude directory (internal state)
+.claude/
+
+# Backups — auto-generated snapshots, not authored config
+backups/
+
+# Plugin marketplace clones — embedded git repos, reinstall from installed_plugins.json
+plugins/marketplaces/
+# Machine-managed plugin cache
+plugins/blocklist.json
+plugins/install-counts-cache.json
+plugins/known_marketplaces.json

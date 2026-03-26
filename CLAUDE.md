@@ -9,6 +9,7 @@ These are default development principles that apply across all projects unless o
 3. **Read before editing** - always read a file before attempting to modify it
 4. **No magic numbers** - use named constants
 5. **Search before struggling** - if an approach fails twice or a problem feels intractable, stop and search online (WebSearch/WebFetch) for documentation, examples, or known issues. Do not keep retrying the same failing approach. Searching is always cheaper than spinning.
+6. **Never guess what you can verify** - if a question can be answered deterministically (reading a file, running a command, checking state) or by querying external resources (web search, docs, APIs), do that instead of guessing. Guessing is only acceptable when no verification path exists.
 
 ## Language Defaults
 

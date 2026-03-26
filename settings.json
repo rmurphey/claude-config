@@ -2,10 +2,30 @@
   "permissions": {
     "allow": [
       "Read(~/.claude/**)",
-      "Grep"
+      "Grep",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_pages",
+      "Bash(~/.claude/skills/md2latex/md2latex application/resume.md)",
+      "Bash(~/.claude/skills/md2latex/md2latex application/cover-letter.md)",
+      "Bash(~/.claude/skills/md2latex/md2latex prep/study-guide-resources.md)",
+      "Bash(~/.claude/skills/md2latex/md2latex research/building-effective-agents-review.md)",
+      "Bash(~/.claude/skills/md2latex/md2latex research/rag-mcp-context-engineering.md)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   },
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); if [[ -n \"$FILE\" ]] && [[ \"$FILE\" =~ \\.(tsx|jsx)$ ]]; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"REACT FILE MODIFIED: %s — Use the react-reviewer agent to review this change before proceeding.\"}}' \"$FILE\"; fi",
+            "statusMessage": "Checking for React file changes..."
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
@@ -48,5 +68,6 @@
   },
   "enabledPlugins": {
     "chrome-devtools-mcp@chrome-devtools-plugins": true
-  }
+  },
+  "effortLevel": "high"
 }

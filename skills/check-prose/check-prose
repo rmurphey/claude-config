@@ -177,13 +177,15 @@ def main():
     # Find markdown files to check
     md_files = find_md_files(directories)
 
-    # Filter out CLAUDE.md files themselves and files in hidden directories
+    # Filter out files we don't control or shouldn't check
     md_files = [
         f
         for f in md_files
         if f.name != "CLAUDE.md"
+        and f.name != "README.md"
         and not any(part.startswith(".") for part in f.parts)
         and "pdf-output" not in f.parts
+        and "source-material" not in f.parts
     ]
 
     if not md_files:

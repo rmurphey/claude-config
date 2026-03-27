@@ -1,6 +1,7 @@
 ---
 name: css-reviewer
 description: Use this agent to critically review CSS, styling, and design system usage for areas of risk. Launch it when reviewing UI changes, refactoring styles, adopting a new CSS framework, or auditing existing stylesheets. It identifies specificity conflicts, responsive breakpoint gaps, accessibility failures, maintainability risks, and framework misuse (Tailwind, CSS Modules, styled-components, etc.).
+tools: Read, Grep, Glob, Bash
 
 Examples:
 <example>

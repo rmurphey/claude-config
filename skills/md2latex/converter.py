@@ -62,6 +62,22 @@ class MarkdownToPdfConverter:
 
         return '\n'.join(fixed_lines)
 
+    def fix_table_alignment(self, content: str) -> str:
+        """
+        Force left-alignment on all markdown table separator rows.
+        Converts |---|---| to |:---|:---| so Pandoc generates
+        consistently left-aligned LaTeX tables.
+        """
+        lines = content.split('\n')
+        fixed_lines = []
+        for line in lines:
+            # Match table separator rows: lines consisting of |, -, :, and spaces
+            if re.match(r'^\|[\s:=-]+(\|[\s:=-]+)+\|?\s*$', line):
+                # Replace each separator cell, preserving existing :--- markers
+                line = re.sub(r'(?<=\|)\s*-{3,}\s*(?=\|)', ':---', line)
+            fixed_lines.append(line)
+        return '\n'.join(fixed_lines)
+
     def sanitize_unicode_for_latex(self, content: str) -> str:
         """
         Replace Unicode characters that LaTeX can't handle with safe alternatives.
@@ -124,6 +140,11 @@ class MarkdownToPdfConverter:
             + r'\RaggedRight' + '\n'
             + r'\renewcommand{\arraystretch}{1.4}' + '\n'
             + '\n'
+            + r'% Left-align tables to match body text' + '\n'
+            + r'\usepackage{longtable}' + '\n'
+            + r'\setlength{\LTleft}{0pt}' + '\n'
+            + r'\setlength{\LTright}{\fill}' + '\n'
+            + '\n'
             + r'% Heading differentiation' + '\n'
             + r'\definecolor{heading}{RGB}{30,30,30}' + '\n'
             + r'\definecolor{subheading}{RGB}{60,60,60}' + '\n'
@@ -175,7 +196,7 @@ class MarkdownToPdfConverter:
             temp_md.unlink()
             temp_header.unlink()
 
-    def process_file(self, filepath: str, fix_issues: bool = True) -> dict:
+    def process_file(self, filepath: str, fix_issues: bool = True, output_dir: str = None) -> dict:
         """
         Process a Markdown file: validate, optionally fix, and convert to PDF.
 
@@ -224,10 +245,17 @@ class MarkdownToPdfConverter:
             fixed_content = content
             result['fixed_content'] = content
 
+        # Fix table alignment for consistent left-aligned columns
+        fixed_content = self.fix_table_alignment(fixed_content)
+
         # Convert to PDF via Pandoc (XeLaTeX handles Unicode natively)
-        output_dir = path.parent
+        if output_dir:
+            pdf_dir = Path(output_dir)
+            pdf_dir.mkdir(parents=True, exist_ok=True)
+        else:
+            pdf_dir = path.parent
         base_name = path.stem
-        pdf_path = output_dir / f"{base_name}.pdf"
+        pdf_path = pdf_dir / f"{base_name}.pdf"
 
         pdf_result = self.convert_to_pdf_via_pandoc(fixed_content, pdf_path)
         result.update(pdf_result)
@@ -238,15 +266,26 @@ class MarkdownToPdfConverter:
 def main():
     """Entry point."""
     if len(sys.argv) < 2:
-        print("Usage: md2latex <markdown-file> [--no-fix]")
+        print("Usage: md2latex <markdown-file> [--no-fix] [--output-dir <path>]")
         print("\nOptions:")
-        print("  --no-fix    Don't automatically fix list formatting issues")
+        print("  --no-fix              Don't automatically fix list formatting issues")
+        print("  --output-dir <path>   Write PDF to this directory instead of alongside source")
         print("\nExample:")
         print("  md2latex README.md")
+        print("  md2latex README.md --output-dir pdf-output/")
         sys.exit(1)
 
     filepath = sys.argv[1]
     fix_issues = '--no-fix' not in sys.argv
+
+    output_dir = None
+    if '--output-dir' in sys.argv:
+        idx = sys.argv.index('--output-dir')
+        if idx + 1 < len(sys.argv):
+            output_dir = sys.argv[idx + 1]
+        else:
+            print("Error: --output-dir requires a path argument")
+            sys.exit(1)
 
     converter = MarkdownToPdfConverter()
 
@@ -256,7 +295,7 @@ def main():
         print(f"Error: {pandoc_check['error']}")
         sys.exit(1)
 
-    result = converter.process_file(filepath, fix_issues)
+    result = converter.process_file(filepath, fix_issues, output_dir=output_dir)
 
     if 'error' in result:
         print(f"Error: {result['error']}")

@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# sync-pdfs: Find stale/missing PDFs and regenerate them via md2latex
+#
+# Walks source directories for .md files, compares against pdf-output/,
+# and regenerates any that are out of date.
+
+MD2LATEX="$HOME/.claude/skills/md2latex/md2latex"
+PDF_OUTPUT_DIR="pdf-output"
+IGNORE_FILE=".sync-pdfs-ignore"
+DRY_RUN=false
+
+if [[ "${1:-}" == "--dry-run" ]]; then
+    DRY_RUN=true
+fi
+
+# Check prerequisites
+if [[ ! -x "$MD2LATEX" ]]; then
+    echo "Error: md2latex not found at $MD2LATEX"
+    exit 1
+fi
+
+if [[ ! -d "$PDF_OUTPUT_DIR" ]]; then
+    echo "Error: $PDF_OUTPUT_DIR/ directory not found in current directory"
+    exit 1
+fi
+
+# Check if a file is in the ignore list
+is_ignored() {
+    local file="$1"
+    [[ -f "$IGNORE_FILE" ]] || return 1
+    grep -qxF "$file" "$IGNORE_FILE" 2>/dev/null
+}
+
+# Find source directories (directories that have a matching pdf-output/ subdirectory)
+SOURCE_DIRS=()
+for dir in "$PDF_OUTPUT_DIR"/*/; do
+    [[ -d "$dir" ]] || continue
+    subdir="$(basename "$dir")"
+    if [[ -d "$subdir" ]]; then
+        SOURCE_DIRS+=("$subdir")
+    fi
+done
+
+if [[ ${#SOURCE_DIRS[@]} -eq 0 ]]; then
+    echo "No source directories found matching pdf-output/ structure."
+    exit 0
+fi
+
+# Collect stale files
+stale=()
+up_to_date=0
+skipped=0
+
+for src_dir in "${SOURCE_DIRS[@]}"; do
+    for md_file in "$src_dir"/*.md; do
+        [[ -f "$md_file" ]] || continue
+
+        # Check ignore list
+        if is_ignored "$md_file"; then
+            skipped=$((skipped + 1))
+            continue
+        fi
+
+        stem="$(basename "$md_file" .md)"
+        pdf_file="$PDF_OUTPUT_DIR/$src_dir/$stem.pdf"
+
+        if [[ ! -f "$pdf_file" ]]; then
+            # PDF doesn't exist — skip (may be intentionally excluded)
+            skipped=$((skipped + 1))
+            continue
+        fi
+
+        # PDF exists — check if stale
+        if [[ "$md_file" -nt "$pdf_file" ]]; then
+            stale+=("$md_file")
+        else
+            up_to_date=$((up_to_date + 1))
+        fi
+    done
+done
+
+# Report
+echo "============================================================"
+echo "PDF Sync Status"
+echo "============================================================"
+echo ""
+echo "Up to date: $up_to_date"
+echo "Skipped:    $skipped"
+echo "Stale:      ${#stale[@]}"
+echo ""
+
+if [[ ${#stale[@]} -eq 0 ]]; then
+    echo "All PDFs are up to date."
+    exit 0
+fi
+
+echo "Stale files:"
+for f in "${stale[@]}"; do
+    echo "  $f"
+done
+echo ""
+
+if [[ "$DRY_RUN" == true ]]; then
+    echo "(dry run -- no files regenerated)"
+    exit 0
+fi
+
+# Regenerate
+echo "Regenerating..."
+echo ""
+
+errors=0
+for md_file in "${stale[@]}"; do
+    src_dir="$(dirname "$md_file")"
+    out_dir="$PDF_OUTPUT_DIR/$src_dir"
+    mkdir -p "$out_dir"
+
+    echo "--- $md_file ---"
+    if "$MD2LATEX" "$md_file" --output-dir "$out_dir"; then
+        echo ""
+    else
+        echo "  ERROR: Failed to generate PDF for $md_file"
+        echo ""
+        errors=$((errors + 1))
+    fi
+done
+
+echo "============================================================"
+echo "Done. Regenerated: $((${#stale[@]} - errors))  Errors: $errors"
+echo "============================================================"
+
+[[ $errors -eq 0 ]]

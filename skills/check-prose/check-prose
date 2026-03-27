@@ -1,0 +1,255 @@
+#!/usr/bin/env python3
+"""
+check-prose: Check markdown files for banned phrases and unfilled placeholders.
+
+Reads banned phrases dynamically from ~/.claude/CLAUDE.md and ./CLAUDE.md.
+"""
+
+import os
+import re
+import sys
+from pathlib import Path
+from typing import List, Set, Tuple
+
+
+def find_claude_md_files() -> List[Path]:
+    """Find global and project CLAUDE.md files."""
+    files = []
+
+    # Global
+    global_claude = Path.home() / ".claude" / "CLAUDE.md"
+    if global_claude.exists():
+        files.append(global_claude)
+
+    # Project (current directory)
+    project_claude = Path.cwd() / "CLAUDE.md"
+    if project_claude.exists():
+        files.append(project_claude)
+
+    return files
+
+
+def extract_banned_phrases(filepath: Path) -> Set[str]:
+    """
+    Extract banned phrases from a CLAUDE.md file.
+
+    Looks for sections about writing standards / banned phrases,
+    then extracts quoted phrases from list items.
+    """
+    content = filepath.read_text()
+    phrases = set()
+
+    # Find relevant sections by looking for headings that suggest banned phrases
+    in_banned_section = False
+    lines = content.split("\n")
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Detect section headings
+        if re.match(r"^#{1,4}\s+", stripped):
+            heading_lower = stripped.lower()
+            in_banned_section = any(
+                keyword in heading_lower
+                for keyword in [
+                    "writing standard",
+                    "banned",
+                    "never use",
+                    "zero tolerance",
+                ]
+            )
+            continue
+
+        if not in_banned_section:
+            continue
+
+        # Skip non-list lines and empty lines
+        if not stripped.startswith("-"):
+            continue
+
+        # Skip entries marked as "(non-literal)" — too many false positives
+        # for a grep-based tool (e.g., "landscape" used literally is fine)
+        if "(non-literal)" in stripped:
+            continue
+
+        # Extract quoted phrases: "phrase" or **"phrase"**
+        # Handle slash-separated alternatives: "phrase A" / "phrase B"
+        quoted = re.findall(r'[*]*"([^"]+)"[*]*', stripped)
+        for phrase in quoted:
+            phrase = phrase.strip()
+            if phrase and len(phrase) > 2:
+                phrases.add(phrase.lower())
+
+    return phrases
+
+
+def find_md_files(directories: List[str]) -> List[Path]:
+    """Find all .md files in the given directories."""
+    files = []
+    for directory in directories:
+        dirpath = Path(directory)
+        if dirpath.is_file() and dirpath.suffix == ".md":
+            files.append(dirpath)
+        elif dirpath.is_dir():
+            files.extend(sorted(dirpath.rglob("*.md")))
+    return files
+
+
+def check_banned_phrases(
+    filepath: Path, phrases: Set[str]
+) -> List[Tuple[int, str, str]]:
+    """
+    Check a file for banned phrases.
+    Returns list of (line_number, phrase_found, line_content).
+    """
+    violations = []
+    content = filepath.read_text()
+    lines = content.split("\n")
+
+    for line_num, line in enumerate(lines, 1):
+        line_lower = line.lower()
+        for phrase in phrases:
+            if phrase in line_lower:
+                violations.append((line_num, phrase, line.strip()))
+
+    return violations
+
+
+PLACEHOLDER_PATTERN = re.compile(
+    r"\[([A-Z][A-Za-z\s]*)\]"  # [UPPERCASE...] or [Title Case...]
+    r"(?!\()"  # NOT followed by ( (which would make it a markdown link)
+)
+
+# Known false positives to skip
+PLACEHOLDER_SKIP = {"CUSTOMER", "EMAIL", "PERSON", "COMPANY"}
+
+
+def check_placeholders(filepath: Path) -> List[Tuple[int, str, str]]:
+    """
+    Check for unfilled placeholders like [VPE name] or [PLACEHOLDER].
+    Skips markdown links ([text](url)) and known redaction placeholders.
+    """
+    violations = []
+    content = filepath.read_text()
+    lines = content.split("\n")
+
+    for line_num, line in enumerate(lines, 1):
+        for match in PLACEHOLDER_PATTERN.finditer(line):
+            placeholder = match.group(1).strip()
+            if placeholder in PLACEHOLDER_SKIP:
+                continue
+            # Skip if it looks like a checkbox: [ ] or [x]
+            if placeholder in ("", "x", "X"):
+                continue
+            violations.append((line_num, f"[{placeholder}]", line.strip()))
+
+    return violations
+
+
+def main():
+    # Parse arguments
+    directories = []
+    for arg in sys.argv[1:]:
+        if arg in ("--help", "-h"):
+            print("Usage: check-prose [directory...]")
+            print()
+            print("Checks markdown files for banned phrases and unfilled placeholders.")
+            print("If no directories given, checks all .md files recursively.")
+            sys.exit(0)
+        else:
+            directories.append(arg)
+
+    # Default: check current directory
+    if not directories:
+        directories = ["."]
+
+    # Discover banned phrases
+    claude_files = find_claude_md_files()
+    if not claude_files:
+        print("Warning: No CLAUDE.md files found. Skipping banned phrase check.")
+        all_phrases = set()
+    else:
+        all_phrases = set()
+        for cf in claude_files:
+            phrases = extract_banned_phrases(cf)
+            all_phrases.update(phrases)
+
+    # Find markdown files to check
+    md_files = find_md_files(directories)
+
+    # Filter out CLAUDE.md files themselves and files in hidden directories
+    md_files = [
+        f
+        for f in md_files
+        if f.name != "CLAUDE.md"
+        and not any(part.startswith(".") for part in f.parts)
+        and "pdf-output" not in f.parts
+    ]
+
+    if not md_files:
+        print("No markdown files found to check.")
+        sys.exit(0)
+
+    # Run checks
+    total_errors = 0
+    results_by_file = {}
+
+    for md_file in md_files:
+        file_violations = []
+
+        if all_phrases:
+            phrase_violations = check_banned_phrases(md_file, all_phrases)
+            for line_num, phrase, line_content in phrase_violations:
+                file_violations.append(
+                    (line_num, "banned phrase", f'"{phrase}"', line_content)
+                )
+
+        placeholder_violations = check_placeholders(md_file)
+        for line_num, placeholder, line_content in placeholder_violations:
+            file_violations.append(
+                (line_num, "placeholder", placeholder, line_content)
+            )
+
+        if file_violations:
+            results_by_file[str(md_file)] = file_violations
+            total_errors += len(file_violations)
+
+    # Report
+    print("=" * 60)
+    print("Prose Quality Check")
+    print("=" * 60)
+    print()
+
+    if all_phrases:
+        print(f"Banned phrases loaded: {len(all_phrases)}")
+        print(f"Sources: {', '.join(str(f) for f in claude_files)}")
+    else:
+        print("No banned phrases loaded.")
+
+    print(f"Files checked: {len(md_files)}")
+    print(f"Violations: {total_errors}")
+    print()
+
+    if total_errors == 0:
+        print("All clean.")
+        sys.exit(0)
+
+    for filepath, violations in sorted(results_by_file.items()):
+        print(f"--- {filepath} ---")
+        for line_num, vtype, detail, line_content in violations:
+            print(f"  line {line_num}: [{vtype}] {detail}")
+            # Truncate long lines for readability
+            if len(line_content) > 120:
+                line_content = line_content[:117] + "..."
+            print(f"    {line_content}")
+        print()
+
+    print("=" * 60)
+    print(f"Total: {total_errors} violation(s) in {len(results_by_file)} file(s)")
+    print("=" * 60)
+
+    sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

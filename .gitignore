@@ -43,3 +43,4 @@ plugins/marketplaces/
 plugins/blocklist.json
 plugins/install-counts-cache.json
 plugins/known_marketplaces.json
+mcp-needs-auth-cache.json

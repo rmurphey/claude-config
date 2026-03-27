@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# pr-description: Collect git context for PR description generation.
+#
+# Gathers commit log, diff stats, and full diff for the current branch
+# relative to a base branch. Outputs structured data for PR authoring.
+
+BASE="${1:-main}"
+
+# Verify git repo
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Error: Not inside a git repository" >&2
+    exit 1
+fi
+
+# Fallback to master if main doesn't exist
+if ! git rev-parse --verify "$BASE" >/dev/null 2>&1; then
+    if [[ "$BASE" == "main" ]] && git rev-parse --verify master >/dev/null 2>&1; then
+        BASE="master"
+    else
+        echo "Error: Base branch '$BASE' not found" >&2
+        exit 1
+    fi
+fi
+
+MERGE_BASE=$(git merge-base "$BASE" HEAD)
+BRANCH=$(git branch --show-current)
+COMMIT_COUNT=$(git rev-list --count "$MERGE_BASE"..HEAD)
+
+if [[ "$COMMIT_COUNT" -eq 0 ]]; then
+    echo "No commits ahead of $BASE. Nothing to describe." >&2
+    exit 1
+fi
+
+echo "============================================================"
+echo "PR Context: $BRANCH -> $BASE"
+echo "============================================================"
+echo ""
+echo "Commits: $COMMIT_COUNT"
+echo "Merge base: $(git log --oneline -1 "$MERGE_BASE")"
+echo ""
+
+echo "--- COMMIT LOG ---"
+git log --format='%h %s' "$MERGE_BASE"..HEAD
+echo ""
+
+echo "--- COMMIT MESSAGES (full) ---"
+git log --format='commit %h%n%B---' "$MERGE_BASE"..HEAD
+echo ""
+
+echo "--- DIFF STATS ---"
+git diff --stat "$MERGE_BASE"..HEAD
+echo ""
+
+MAX_DIFF_LINES=8000
+
+echo "--- DIFF ---"
+DIFF=$(git diff "$MERGE_BASE"..HEAD)
+DIFF_LINES=$(echo "$DIFF" | wc -l | tr -d ' ')
+if [[ "$DIFF_LINES" -gt "$MAX_DIFF_LINES" ]]; then
+    echo "(diff truncated: $DIFF_LINES lines, showing first $MAX_DIFF_LINES)"
+    echo "$DIFF" | head -"$MAX_DIFF_LINES"
+else
+    echo "$DIFF"
+fi

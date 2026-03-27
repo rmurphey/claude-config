@@ -10,7 +10,28 @@
       "Bash(~/.claude/skills/md2latex/md2latex research/building-effective-agents-review.md)",
       "Bash(~/.claude/skills/md2latex/md2latex research/rag-mcp-context-engineering.md)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(wc -l src/scripts/*.ts)",
+      "Bash(~/.claude/skills/md2latex/md2latex prep/stories.md)",
+      "Bash(pandoc -t latex)",
+      "Edit(~/.claude/skills/md2latex/**)",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git add:*)",
+      "Bash(~/.claude/skills/md2latex/md2latex prep/stories.md --output-dir pdf-output/prep)",
+      "Bash(git status:*)",
+      "Bash(~/.claude/skills/md2latex/md2latex prep/technical-discussion-prep.md --output-dir pdf-output/prep)",
+      "Bash(find ~/.claude -type f -name *.md -o -name *.json -o -name *.yaml -o -name *.yml)",
+      "Bash(~/.claude/skills/sync-pdfs/sync-pdfs)",
+      "Bash(~/.claude/skills/check-prose/check-prose)",
+      "Bash(~/.claude/skills/sync-pdfs/sync-pdfs --dry-run)"
+    ],
+    "additionalDirectories": [
+      "/tmp",
+      "~/.claude/skills"
     ]
   },
   "hooks": {

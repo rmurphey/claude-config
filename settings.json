@@ -45,6 +45,16 @@
             "statusMessage": "Checking for React file changes..."
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); if [[ -n \"$FILE\" ]] && [[ \"$FILE\" =~ \\.py$ ]]; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"PYTHON FILE MODIFIED: %s — Use the python-reviewer agent to review this change before proceeding.\"}}' \"$FILE\"; fi",
+            "statusMessage": "Checking for Python file changes..."
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -68,6 +78,11 @@
           {
             "type": "command",
             "command": "python3 ~/.claude/hooks/reset-tdd-on-commit.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/enforce-atomic-commits.py",
+            "statusMessage": "Checking commit atomicity..."
           }
         ]
       },

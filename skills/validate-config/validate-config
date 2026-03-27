@@ -1,0 +1,293 @@
+#!/usr/bin/env python3
+"""
+validate-config: Validate Claude Code configuration directory.
+
+Checks settings.json hooks, skill directories, agent frontmatter,
+and permission patterns for consistency and correctness.
+
+Exit codes:
+  0 = All checks passed
+  1 = Issues found
+"""
+import json
+import os
+import re
+import sys
+from pathlib import Path
+
+CLAUDE_DIR = Path.home() / '.claude'
+SETTINGS_PATH = CLAUDE_DIR / 'settings.json'
+AGENTS_DIR = CLAUDE_DIR / 'agents'
+SKILLS_DIR = CLAUDE_DIR / 'skills'
+HOOKS_DIR = CLAUDE_DIR / 'hooks'
+
+REQUIRED_AGENT_FIELDS = {'name', 'description', 'tools'}
+
+# Known tool names for permission validation
+KNOWN_TOOLS = {
+    'Read', 'Write', 'Edit', 'Grep', 'Glob', 'Bash',
+    'WebFetch', 'WebSearch', 'Agent', 'NotebookEdit',
+}
+
+issues: list[dict] = []
+passes: list[str] = []
+
+
+def add_issue(category: str, severity: str, message: str) -> None:
+    issues.append({'category': category, 'severity': severity, 'message': message})
+
+
+def add_pass(message: str) -> None:
+    passes.append(message)
+
+
+def load_settings() -> dict | None:
+    if not SETTINGS_PATH.exists():
+        add_issue('settings', 'FAIL', f'{SETTINGS_PATH} does not exist')
+        return None
+    try:
+        with open(SETTINGS_PATH, encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        add_issue('settings', 'FAIL', f'{SETTINGS_PATH} is not valid JSON: {e}')
+        return None
+
+
+def extract_script_paths(command: str) -> list[str]:
+    """Extract script file paths from a hook command string."""
+    paths = []
+    # Match patterns like: python3 ~/.claude/hooks/foo.py
+    #                      node ~/.claude/hooks/foo.js
+    #                      bash ~/.claude/hooks/foo.sh
+    for match in re.finditer(r'(?:python3?|node|bash)\s+(~?/[\w./-]+)', command):
+        path = match.group(1)
+        path = os.path.expanduser(path)
+        paths.append(path)
+    return paths
+
+
+def check_hooks(settings: dict) -> None:
+    hooks = settings.get('hooks', {})
+    if not hooks:
+        add_pass('No hooks configured')
+        return
+
+    hook_count = 0
+    for event_name, matchers in hooks.items():
+        if not isinstance(matchers, list):
+            add_issue('hooks', 'FAIL', f'hooks.{event_name} should be an array, got {type(matchers).__name__}')
+            continue
+
+        for i, matcher_entry in enumerate(matchers):
+            if not isinstance(matcher_entry, dict):
+                add_issue('hooks', 'FAIL', f'hooks.{event_name}[{i}] should be an object')
+                continue
+
+            if 'matcher' not in matcher_entry:
+                add_issue('hooks', 'FAIL', f'hooks.{event_name}[{i}] missing required field "matcher"')
+
+            hook_list = matcher_entry.get('hooks', [])
+            if not isinstance(hook_list, list):
+                add_issue('hooks', 'FAIL', f'hooks.{event_name}[{i}].hooks should be an array')
+                continue
+
+            for j, hook in enumerate(hook_list):
+                hook_count += 1
+                if not isinstance(hook, dict):
+                    add_issue('hooks', 'FAIL', f'hooks.{event_name}[{i}].hooks[{j}] should be an object')
+                    continue
+
+                if 'type' not in hook:
+                    add_issue('hooks', 'FAIL', f'hooks.{event_name}[{i}].hooks[{j}] missing required field "type"')
+                if 'command' not in hook:
+                    add_issue('hooks', 'FAIL', f'hooks.{event_name}[{i}].hooks[{j}] missing required field "command"')
+                    continue
+
+                # Check referenced script files exist
+                script_paths = extract_script_paths(hook['command'])
+                for script_path in script_paths:
+                    if not os.path.exists(script_path):
+                        add_issue('hooks', 'FAIL', f'Hook script not found: {script_path}')
+                    elif not os.access(script_path, os.R_OK):
+                        add_issue('hooks', 'WARN', f'Hook script not readable: {script_path}')
+                    else:
+                        add_pass(f'Hook script exists: {os.path.basename(script_path)}')
+
+    add_pass(f'{hook_count} hook(s) checked')
+
+
+def check_skills() -> None:
+    if not SKILLS_DIR.exists():
+        add_issue('skills', 'WARN', f'{SKILLS_DIR} does not exist')
+        return
+
+    skill_dirs = [d for d in SKILLS_DIR.iterdir() if d.is_dir()]
+    if not skill_dirs:
+        add_pass('No skill directories found')
+        return
+
+    for skill_dir in sorted(skill_dirs):
+        skill_name = skill_dir.name
+        skill_md = skill_dir / 'SKILL.md'
+
+        if not skill_md.exists():
+            add_issue('skills', 'FAIL', f'{skill_name}/ missing SKILL.md')
+        else:
+            add_pass(f'{skill_name}/ has SKILL.md')
+
+        # Check for executable scripts (files named same as directory, or common script extensions)
+        script_candidates = [
+            skill_dir / skill_name,  # e.g., skills/foo/foo
+        ]
+        for candidate in script_candidates:
+            if candidate.exists() and not os.access(candidate, os.X_OK):
+                add_issue('skills', 'FAIL', f'{skill_name}/{candidate.name} exists but is not executable (chmod +x needed)')
+            elif candidate.exists():
+                add_pass(f'{skill_name}/{candidate.name} is executable')
+
+
+def check_agents() -> None:
+    if not AGENTS_DIR.exists():
+        add_issue('agents', 'WARN', f'{AGENTS_DIR} does not exist')
+        return
+
+    agent_files = sorted(AGENTS_DIR.glob('*.md'))
+    if not agent_files:
+        add_pass('No agent files found')
+        return
+
+    for agent_file in agent_files:
+        agent_name = agent_file.stem
+        try:
+            content = agent_file.read_text(encoding='utf-8')
+        except OSError as e:
+            add_issue('agents', 'FAIL', f'{agent_name}.md: cannot read: {e}')
+            continue
+
+        # Parse YAML frontmatter (between --- delimiters)
+        frontmatter_match = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+        if not frontmatter_match:
+            add_issue('agents', 'FAIL', f'{agent_name}.md: no YAML frontmatter found')
+            continue
+
+        frontmatter_text = frontmatter_match.group(1)
+
+        # Check for required fields using line-level matching
+        found_fields = set()
+        for line in frontmatter_text.split('\n'):
+            for field in REQUIRED_AGENT_FIELDS:
+                if re.match(rf'^{field}\s*:', line):
+                    found_fields.add(field)
+
+        missing = REQUIRED_AGENT_FIELDS - found_fields
+        if missing:
+            add_issue('agents', 'FAIL', f'{agent_name}.md: missing frontmatter fields: {", ".join(sorted(missing))}')
+        else:
+            add_pass(f'{agent_name}.md has required frontmatter ({", ".join(sorted(found_fields))})')
+
+
+def check_permissions(settings: dict) -> None:
+    permissions = settings.get('permissions', {})
+    allow_list = permissions.get('allow', [])
+
+    if not allow_list:
+        add_pass('No permissions configured')
+        return
+
+    # Check for duplicates
+    seen = {}
+    duplicates = []
+    for i, entry in enumerate(allow_list):
+        if entry in seen:
+            duplicates.append(entry)
+        else:
+            seen[entry] = i
+
+    if duplicates:
+        for dup in duplicates:
+            add_issue('permissions', 'WARN', f'Duplicate permission entry: {dup}')
+    else:
+        add_pass(f'{len(allow_list)} permissions, no duplicates')
+
+    # Check syntax: should be ToolName or ToolName(pattern) or mcp__*
+    syntax_errors = 0
+    permission_pattern = re.compile(
+        r'^(?:'
+        r'[A-Za-z_][A-Za-z0-9_]*'          # Tool name
+        r'(?:\(.*\))?'                       # Optional (pattern)
+        r'|mcp__[A-Za-z0-9_-]+__[A-Za-z0-9_-]+'  # MCP tool (may include hyphens)
+        r')$'
+    )
+    for entry in allow_list:
+        if not permission_pattern.match(entry):
+            add_issue('permissions', 'WARN', f'Unusual permission syntax: {entry}')
+            syntax_errors += 1
+
+    if syntax_errors == 0:
+        add_pass('All permission entries have valid syntax')
+
+
+def print_report() -> None:
+    print('=' * 60)
+    print('Claude Code Config Validation')
+    print('=' * 60)
+    print()
+
+    # Group issues by category
+    categories_with_issues = {}
+    for issue in issues:
+        cat = issue['category']
+        if cat not in categories_with_issues:
+            categories_with_issues[cat] = []
+        categories_with_issues[cat].append(issue)
+
+    # Print passes
+    if passes:
+        for msg in passes:
+            print(f'  OK    {msg}')
+        print()
+
+    # Print issues
+    if issues:
+        print('Issues found:')
+        print()
+        for cat, cat_issues in categories_with_issues.items():
+            for issue in cat_issues:
+                severity = issue['severity']
+                print(f'  {severity}  [{cat}] {issue["message"]}')
+        print()
+
+    # Summary
+    fail_count = sum(1 for i in issues if i['severity'] == 'FAIL')
+    warn_count = sum(1 for i in issues if i['severity'] == 'WARN')
+    print('=' * 60)
+    if not issues:
+        print(f'Result: All checks passed ({len(passes)} OK)')
+    else:
+        parts = []
+        if fail_count:
+            parts.append(f'{fail_count} error(s)')
+        if warn_count:
+            parts.append(f'{warn_count} warning(s)')
+        print(f'Result: {", ".join(parts)}')
+    print('=' * 60)
+
+
+def main() -> None:
+    settings = load_settings()
+
+    if settings is not None:
+        check_hooks(settings)
+        check_permissions(settings)
+
+    check_skills()
+    check_agents()
+
+    print_report()
+
+    fail_count = sum(1 for i in issues if i['severity'] == 'FAIL')
+    sys.exit(1 if fail_count > 0 else 0)
+
+
+if __name__ == '__main__':
+    main()

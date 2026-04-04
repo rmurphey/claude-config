@@ -27,7 +27,12 @@
       "Bash(find ~/.claude -type f -name *.md -o -name *.json -o -name *.yaml -o -name *.yml)",
       "Bash(~/.claude/skills/sync-pdfs/sync-pdfs)",
       "Bash(~/.claude/skills/check-prose/check-prose)",
-      "Bash(~/.claude/skills/sync-pdfs/sync-pdfs --dry-run)"
+      "Bash(~/.claude/skills/sync-pdfs/sync-pdfs --dry-run)",
+      "Bash(git reset:*)",
+      "Bash(git mv:*)",
+      "Edit(/.claude/skills/md2latex/**)",
+      "Edit(/.claude/skills/sync-pdfs/**)",
+      "Edit(/.claude/skills/check-prose/**)"
     ],
     "additionalDirectories": [
       "/tmp",

@@ -70,6 +70,26 @@
             "statusMessage": "Checking for test file changes..."
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); if [[ -n \"$FILE\" ]] && [[ \"$FILE\" =~ \\.(m?js|cjs|ts)$ ]] && [[ ! \"$FILE\" =~ \\.(tsx|jsx)$ ]]; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"TS/JS FILE MODIFIED: %s — Use the ts-reviewer agent to review this change before proceeding.\"}}' \"$FILE\"; fi",
+            "statusMessage": "Checking for TypeScript/JavaScript file changes..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); if [[ -n \"$FILE\" ]] && [[ \"$FILE\" =~ \\.(sh|bash|zsh)$ ]]; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"SHELL SCRIPT MODIFIED: %s — Use the shell-reviewer agent to review this change before proceeding.\"}}' \"$FILE\"; fi",
+            "statusMessage": "Checking for shell script changes..."
+          }
+        ]
       }
     ],
     "PreToolUse": [

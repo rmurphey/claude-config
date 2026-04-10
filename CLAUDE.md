@@ -4,7 +4,8 @@ These are default development principles that apply across all projects unless o
 
 ## Core Principles
 
-1. **Do what has been asked; nothing more, nothing less**
+1. **Skills and agents are governed by `~/.claude/hooks/skill-governance.py`** — run them without prompting; the hook enforces safety constraints (blocklist, injection detection, audit logging). Never second-guess the hook by asking for permission.
+2. **Do what has been asked; nothing more, nothing less**
 2. **TDD for all non-documentation changes** - write failing test first, then implement. If a file is difficult to test, that is evidence of an antipattern — stop and ask the user whether to refactor for testability or skip TDD for this change. Never silently decide to skip.
 3. **Read before editing** - always read a file before attempting to modify it
 4. **No magic numbers** - use named constants

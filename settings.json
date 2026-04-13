@@ -81,6 +81,26 @@
             "statusMessage": "Checking for shell script changes..."
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); BASENAME=$(basename \"$FILE\" 2>/dev/null); if [[ -n \"$BASENAME\" ]] && [[ \"$BASENAME\" =~ ^(auth|login|session|token|permission|rbac|acl|middleware|guard|policy|password|credential|oauth|saml|jwt|crypto|encrypt|decrypt|hash|secret|security|cors|csrf|sanitiz|upload|webhook|callback|redirect|proxy|gateway|rate.?limit|admin|privilege|role|route|controller|handler|endpoint|api|server)\\. ]] && [[ \"$BASENAME\" =~ \\.(py|ts|js|mjs|cjs|go|rb|java|rs|php)$ ]]; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"SECURITY-SENSITIVE FILE MODIFIED: %s — Use the security-reviewer agent to review this change for vulnerabilities.\"}}' \"$FILE\"; fi",
+            "statusMessage": "Checking for security-sensitive file changes..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); BASENAME=$(basename \"$FILE\" 2>/dev/null); if [[ -n \"$BASENAME\" ]] && [[ \"$BASENAME\" =~ ^(model|schema|entity|migration|log|logger|logging|analytics|tracking|telemetry|user|profile|account|customer|patient|employee|pii|gdpr|consent|export|report|serializer|response|presenter|transformer|dto)\\. ]] && [[ \"$BASENAME\" =~ \\.(py|ts|js|mjs|cjs|go|rb|java|rs|php)$ ]]; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"DATA/PRIVACY-SENSITIVE FILE MODIFIED: %s — Use the privacy-reviewer agent to review PII handling.\"}}' \"$FILE\"; fi",
+            "statusMessage": "Checking for privacy-sensitive file changes..."
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -114,6 +134,11 @@
             "type": "command",
             "command": "python3 ~/.claude/hooks/enforce-atomic-commits.py",
             "statusMessage": "Checking commit atomicity..."
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/pre-push-review.py",
+            "statusMessage": "Checking for security-sensitive changes before push..."
           }
         ]
       },

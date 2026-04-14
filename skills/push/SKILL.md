@@ -51,11 +51,22 @@ If the push is rejected (non-fast-forward), **do not force push**. Instead:
 - Suggest `git pull --rebase` to incorporate remote changes
 - Ask the user how they want to proceed
 
-### Step 4: Report results
+### Step 4: Auto-PR on first push
+
+If the push used `-u` (first push to a new branch that is NOT `main` or `master`):
+
+1. Ask the user if they want to create a draft PR
+2. If yes, run: `gh pr create --draft --fill` to create a draft PR with auto-filled title and body
+3. Report the PR URL
+
+If the branch already had an upstream, skip this step.
+
+### Step 5: Report results
 
 After a successful push, show:
 - The branch name and remote
 - Which commits were pushed (hash and message)
+- PR URL (if created in Step 4)
 - Current `git status`
 
 ## Rules

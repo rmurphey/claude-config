@@ -101,6 +101,36 @@
             "statusMessage": "Checking for privacy-sensitive file changes..."
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); if [[ -n \"$FILE\" ]]; then CONTENT=$(head -20 \"$FILE\" 2>/dev/null); if echo \"$CONTENT\" | grep -qiE '(import\\s+(anthropic|openai|langchain|llama_index|transformers|cohere|replicate|together)|from\\s+(anthropic|openai|langchain|llama_index|transformers|cohere|replicate|together)|require\\(.*(anthropic|openai|langchain)\\))'; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"AI/LLM SDK FILE MODIFIED: %s — Use the ai-security-reviewer agent to review for OWASP LLM Top 10 vulnerabilities.\"}}' \"$FILE\"; fi; fi",
+            "statusMessage": "Checking for AI SDK file changes..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); BASENAME=$(basename \"$FILE\" 2>/dev/null); if [[ -n \"$BASENAME\" ]] && { [[ \"$BASENAME\" =~ ^(go\\.mod|go\\.sum|Gemfile|Gemfile\\.lock|Pipfile|build\\.gradle)$ ]] || [[ \"$BASENAME\" =~ ^(package|package-lock|requirements|Pipfile|pyproject|setup|Cargo|pom|composer)\\. ]]; }; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"DEPENDENCY FILE MODIFIED: %s — Use the dependency-reviewer agent to review supply chain changes.\"}}' \"$FILE\"; fi",
+            "statusMessage": "Checking for dependency file changes..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); BASENAME=$(basename \"$FILE\" 2>/dev/null); if [[ -n \"$BASENAME\" ]] && [[ \"$BASENAME\" =~ ^(handler|controller|route|endpoint|server|worker|consumer|processor|job|service|api|app)\\. ]] && [[ \"$BASENAME\" =~ \\.(py|ts|js|mjs|cjs|go|rb|java|rs|php)$ ]]; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"SERVICE FILE MODIFIED: %s — Use the observability-reviewer agent to check instrumentation coverage.\"}}' \"$FILE\"; fi",
+            "statusMessage": "Checking for service file changes..."
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -139,6 +169,11 @@
             "type": "command",
             "command": "python3 ~/.claude/hooks/pre-push-review.py",
             "statusMessage": "Checking for security-sensitive changes before push..."
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/pre-exec-python.py",
+            "statusMessage": "Reviewing Python script before execution..."
           }
         ]
       },

@@ -3,4 +3,4 @@
 input=$(cat)
 echo "$input" > /tmp/statusline-debug.json
 echo "$input" | jq '.' > /tmp/statusline-debug-pretty.json 2>&1
-cat ~/.claude/statusline-command.sh | bash
+cat "$HOME/.claude/statusline-command.sh" | bash

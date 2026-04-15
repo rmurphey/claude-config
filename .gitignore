@@ -42,6 +42,7 @@ plugins/marketplaces/
 # Machine-managed plugin cache
 plugins/blocklist.json
 plugins/install-counts-cache.json
+plugins/installed_plugins.json
 plugins/known_marketplaces.json
 mcp-needs-auth-cache.json
 

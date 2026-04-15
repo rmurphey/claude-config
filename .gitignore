@@ -47,3 +47,6 @@ mcp-needs-auth-cache.json
 
 # Python bytecode cache
 __pycache__/
+
+# Auto-generated policy file
+policy-limits.json

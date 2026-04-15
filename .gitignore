@@ -48,6 +48,29 @@ mcp-needs-auth-cache.json
 
 # Python bytecode cache
 __pycache__/
+.pytest_cache/
+
+# Python virtual environments
+.venv/
+venv/
+
+# Node.js dependencies
+node_modules/
 
 # Auto-generated policy file
 policy-limits.json
+
+# macOS
+.DS_Store
+
+# Environment files — may contain secrets
+.env
+.env.local
+.env.*.local
+
+# IDE/editor state
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

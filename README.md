@@ -4,7 +4,7 @@ A personal [Claude Code](https://docs.claude.com/en/docs/claude-code) configurat
 
 ## What you get
 
-**13 specialized reviewer agents** that activate automatically based on what you edit — React components, Python scripts, test files, shell scripts, CSS, TypeScript, documentation, dependency manifests, and files with security or privacy implications.
+**15 specialized reviewer agents** that activate automatically based on what you edit — React components, Python scripts, test files, shell scripts, CSS, TypeScript, documentation, dependency manifests, and files with security or privacy implications. Plus on-demand reviewers for defensive design, documentation completeness, and codebase duplication.
 
 **11 slash-command skills** for the most common workflow tasks: `/commit`, `/push`, `/review-pr`, `/pr-description`, `/changelog`, `/secrets-scan`, `/validate-config`, and more.
 
@@ -43,6 +43,8 @@ Triggered automatically via PostToolUse hooks when matching files are modified. 
 | `ai-security-reviewer` | Files importing AI SDKs | OWASP LLM Top 10 — prompt injection, sensitive data in prompts, excessive agency, unbounded consumption |
 | `dependency-reviewer` | Manifest/lock files | Supply chain — typosquatting, wide version ranges, install scripts, lock file integrity |
 | `observability-reviewer` | Handler/service/route files | Logging, metrics, tracing, error tracking, health checks, structured context |
+| `documentation-reviewer` | On-demand | Whether a changeset needs doc updates — missing docstrings, stale READMEs, missing CHANGELOG entries, undocumented env vars |
+| `duplication-reviewer` | On-demand | Literal, structural, and concept duplication across the codebase; recommends concrete consolidations |
 
 ## Skills
 

@@ -49,6 +49,9 @@ From the PR metadata, categorize each changed file:
 - **Data/privacy-sensitive files** (model, schema, logging, etc.) → queue for privacy-reviewer
 - **AI-related files** (imports anthropic/openai/langchain) → queue for ai-security-reviewer
 - **Dependency files** (package.json, requirements.txt, etc.) → queue for dependency-reviewer
+- **Service/handler/endpoint files** (observability concerns) → queue for observability-reviewer
+- **Any public API or config change** → queue for documentation-reviewer to verify docs are updated
+- **Large or refactor PRs** → optionally queue for duplication-reviewer to check for new or worsening duplication
 
 ### Step 3: Read changed files
 

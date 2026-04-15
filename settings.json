@@ -23,7 +23,8 @@
       "Edit(/.claude/skills/md2latex/**)",
       "Edit(/.claude/skills/sync-pdfs/**)",
       "Edit(/.claude/skills/check-prose/**)",
-      "Bash(pip3 install:*)"
+      "Bash(pip3 install:*)",
+      "Bash(git checkout:*)"
     ],
     "additionalDirectories": [
       "/tmp",

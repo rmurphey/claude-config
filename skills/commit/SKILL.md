@@ -43,21 +43,27 @@ For each group, determine:
 - The conventional commit prefix (`feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`)
 - A concise commit message (1-2 sentences) focused on the "why"
 
-### Step 3: Present the plan
+### Step 3: Decide whether to proceed or ask
 
-Before committing anything, present the commit plan to the user:
+**Single commit (all changes are one topic):**
+Proceed immediately — do NOT ask for approval. The user trusts the conventional-commit prefix and the atomic-commit hook to catch mistakes. Just create the commit and report results.
+
+**Multiple commits (changes span more than one topic):**
+You MUST present the commit plan and wait for explicit approval before proceeding. Show the plan:
 
 ```
-Commit plan:
+Commit plan (2 commits — approval required):
 1. feat: add user validation endpoint
    - src/routes/users.ts, src/validators/user.ts, tests/users.test.ts
 2. chore: update eslint config for new rules
    - .eslintrc.json
 ```
 
-If there is only one logical group, still present it for confirmation but note that all changes are part of one topic.
+The user may adjust the grouping, merge groups, or reorder. Do not proceed until they approve.
 
-**Wait for user approval before proceeding.** If the user wants changes to the grouping, adjust and re-present.
+**Edge cases:**
+- If you are uncertain whether changes are one topic or two, err on the side of one commit (the atomic-commit hook will block if it disagrees)
+- If a single commit touches 3+ unrelated directories but is genuinely one topic (e.g., a cross-cutting refactor), proceed without asking — the commit message should make the unity clear
 
 ### Step 4: Create commits
 

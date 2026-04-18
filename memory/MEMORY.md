@@ -1,0 +1,1 @@
+- [Commit approval preference](feedback_commit_approval.md) — skip approval on single-topic commits; only ask when proposing splits

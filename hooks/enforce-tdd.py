@@ -111,13 +111,11 @@ def scan_transcript(transcript_path: str) -> dict:
 
                 entry_type = entry.get('type', '')
                 message = entry.get('message', {})
-                content_blocks = message.get('content', [])
-                if not isinstance(content_blocks, list):
-                    content_blocks = []
+                content = message.get('content', [])
 
-                # Check for test file edits in assistant messages
-                if entry_type == 'assistant':
-                    for block in content_blocks:
+                # Check for test file edits in assistant messages (always list-shaped).
+                if entry_type == 'assistant' and isinstance(content, list):
+                    for block in content:
                         if not isinstance(block, dict):
                             continue
                         if block.get('type') == 'tool_use' and block.get('name') in ('Edit', 'Write'):
@@ -125,15 +123,20 @@ def scan_transcript(transcript_path: str) -> dict:
                             if is_test_file(edited_path):
                                 result['has_test_edit'] = True
 
-                # Check for user bypass request
+                # Check for user bypass request. User-message content can be a plain
+                # string (typed message) OR a list of blocks (tool results, etc.).
                 if entry_type == 'user':
-                    for block in content_blocks:
-                        if isinstance(block, dict):
-                            text = block.get('text', '')
-                            if text and bypass_pattern.search(text):
-                                result['has_tdd_bypass'] = True
-                        elif isinstance(block, str) and bypass_pattern.search(block):
+                    if isinstance(content, str):
+                        if bypass_pattern.search(content):
                             result['has_tdd_bypass'] = True
+                    elif isinstance(content, list):
+                        for block in content:
+                            if isinstance(block, dict):
+                                text = block.get('text', '')
+                                if text and bypass_pattern.search(text):
+                                    result['has_tdd_bypass'] = True
+                            elif isinstance(block, str) and bypass_pattern.search(block):
+                                result['has_tdd_bypass'] = True
 
                 # Early exit if both found
                 if result['has_test_edit'] and result['has_tdd_bypass']:
@@ -143,6 +146,46 @@ def scan_transcript(transcript_path: str) -> dict:
         result['has_test_edit'] = True
 
     return result
+
+
+def tests_exist_for_file(file_path: str) -> bool:
+    """Check if test files already exist that correspond to the given source file."""
+    path = Path(file_path).resolve()
+    stem = path.stem
+    suffix = path.suffix
+
+    if suffix == '.py':
+        candidates = [f'test_{stem}.py', f'{stem}_test.py']
+    elif suffix in ('.ts', '.tsx', '.js', '.jsx'):
+        candidates = [f'{stem}.test{suffix}', f'{stem}.spec{suffix}']
+        for ext in ('.ts', '.tsx', '.js', '.jsx'):
+            if ext != suffix:
+                candidates += [f'{stem}.test{ext}', f'{stem}.spec{ext}']
+    elif suffix == '.go':
+        candidates = [f'{stem}_test.go']
+    elif suffix == '.rs':
+        candidates = [f'{stem}_test.rs']
+    elif suffix == '.java':
+        candidates = [f'{stem}Test.java']
+    else:
+        candidates = [f'test_{stem}{suffix}', f'{stem}_test{suffix}']
+
+    search_dirs = [
+        path.parent,
+        path.parent / 'tests',
+        path.parent / 'test',
+        path.parent / '__tests__',
+    ]
+    grandparent = path.parent.parent
+    if grandparent != path.parent:
+        search_dirs += [grandparent / 'tests', grandparent / 'test']
+
+    for directory in search_dirs:
+        for candidate in candidates:
+            if (directory / candidate).exists():
+                return True
+
+    return False
 
 
 def cache_path_for_session(session_id: str) -> str:
@@ -193,12 +236,12 @@ def main():
 
     transcript_state = scan_transcript(transcript_path)
 
-    if transcript_state['has_test_edit'] or transcript_state['has_tdd_bypass']:
+    if transcript_state['has_test_edit'] or transcript_state['has_tdd_bypass'] or tests_exist_for_file(file_path):
         if session_id:
             mark_tdd_satisfied(session_id)
         sys.exit(0)
 
-    # No test file has been edited yet and no bypass — block
+    # No test file has been edited yet, no bypass, and no existing tests found — block
     error_lines = [
         "",
         "=" * 70,

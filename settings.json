@@ -24,13 +24,26 @@
       "Edit(/.claude/skills/sync-pdfs/**)",
       "Edit(/.claude/skills/check-prose/**)",
       "Bash(pip3 install:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Read(//Users/rmurphey/personal/**)",
+      "Edit(/.claude/skills/audience-review/**)",
+      "Edit(/.claude/skills/brainstorm-outline/**)",
+      "Edit(/.claude/skills/review-draft/**)",
+      "Bash(grep \"\\\\.md$\")",
+      "WebSearch",
+      "WebFetch(domain:www.ncleg.gov)",
+      "WebFetch(domain:www.ncleg.net)",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__new_page",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__select_page",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__wait_for",
+      "WebFetch(domain:www.nccourts.gov)"
     ],
     "additionalDirectories": [
       "/tmp",
       "~/.claude/skills"
     ]
   },
+  "model": "sonnet",
   "hooks": {
     "PostToolUse": [
       {
@@ -188,6 +201,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/output-to-file-detect.py",
+            "statusMessage": "Checking output-to-file policy..."
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
@@ -195,7 +219,8 @@
     "command": "bash -c 'tee /tmp/statusline-input.json | bash ~/.claude/statusline-command.sh'"
   },
   "enabledPlugins": {
-    "chrome-devtools-mcp@chrome-devtools-plugins": true
+    "chrome-devtools-mcp@chrome-devtools-plugins": true,
+    "frontend-design@claude-plugins-official": true
   },
   "effortLevel": "medium"
 }

@@ -1,0 +1,12 @@
+{
+  "enabled": false,
+  "threshold_chars": 1500,
+  "override_tokens": ["@chat", "respond inline", "just tell me"],
+  "skill_allowlist": ["commit", "push", "validate-config", "secrets-scan", "pr-description"],
+  "blocking_escalation": false,
+  "escalate_after_violations": 2,
+  "max_blocks_per_session": 1,
+  "prefer_existing_docs": true,
+  "existing_doc_globs": ["*.md", "docs/**/*.md", "plans/**/*.md"],
+  "audit_log": "~/.claude/logs/output-enforcement.log"
+}

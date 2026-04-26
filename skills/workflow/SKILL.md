@@ -1,6 +1,6 @@
 ---
 name: workflow
-description: This skill should be used when the user asks to "add to the backlog", "add a task", "queue this", "remember to", "show the backlog", "list tasks", "what's pending", "work on the backlog", "work on next task", "keep going", "what's in progress", "what's blocked", "show blockers", "what's done", or "recently completed". Manages a project backlog at .claude/BACKLOG.md and executes tasks autonomously — Claude does the work, agents review it, skills handle commits and pushes.
+description: This skill should be used when the user asks to "add to the backlog", "add a task", "queue this", "remember to", "show the backlog", "list tasks", "what's pending", "work on the backlog", "work on next task", "keep going", "what's in progress", "what's blocked", "show blockers", "what's done", "recently completed", "status report", "show progress", or "backlog summary". Manages a project backlog at .claude/BACKLOG.md and executes tasks autonomously — Claude does the work, agents review it, skills handle commits and pushes.
 ---
 
 # workflow
@@ -27,6 +27,7 @@ Execution detail by task type: `references/execution-guide.md`.
 | "work on backlog", "next task", "keep going", bare `/workflow` | **Execute** |
 | "what's in progress", "what's blocked", "show blockers" | **Status** |
 | "what's done", "recently completed", "show finished" | **Done** |
+| "status report", "show progress", "backlog summary" | **Status Report** |
 
 ---
 
@@ -64,6 +65,32 @@ For each blocked task, offer via `AskUserQuestion`:
 ## Mode: Done
 
 Read `BACKLOG.md`. Show the Done section — last 20 entries, newest first. Display: ID, title, completion summary line.
+
+---
+
+## Mode: Status Report
+
+Read `BACKLOG.md`. Produce a single markdown digest suitable for sharing in a doc, issue, or chat. Do not modify the backlog.
+
+Output, in order:
+
+**Counts by tier:**
+
+| Tier | Pending | In progress | Blocked |
+|------|---------|-------------|---------|
+| 🔴 Urgent | N | N | N |
+| 🟠 High | N | N | N |
+| 🟡 Normal | N | N | N |
+| 🟢 Low | N | N | N |
+| **Total** | N | N | N |
+
+**In progress** — for each `[~]` task, one line: `**WF-NNN** title — _started: TIMESTAMP_`. If none: `_None._`
+
+**Blocked** — for each `[!]` task, one line: `**WF-NNN** title — Blocker: <one-line summary>`. If none: `_None._`
+
+**Recently done** — last 5 from the Done section, newest first: `**WF-NNN** title — <one-line Done summary>`. If fewer than 5 exist, show all.
+
+The digest is plain markdown — copy-pasteable into a PR description, issue, or chat. No interactive prompts in this mode.
 
 ---
 

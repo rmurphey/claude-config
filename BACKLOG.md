@@ -6,10 +6,6 @@
 
 ## 🟠 High
 
-- [ ] **WF-002** `[feat]` Add Status Report mode to /workflow with shareable visual current-state output
-  > Collaborators read BACKLOG.md, but eyeballing four priority sections plus In Progress, Blocked, and Done is heavy. Need a single-command digest that's copy-pasteable into a doc, issue, or Slack.
-  > AC: New mode triggered by phrases like "status report", "show progress", "backlog summary". Output is markdown including a counts-per-tier table, in-progress list with start times, blocked list with blockers, and last 5 done with one-line summaries. Trigger phrases documented in SKILL.md.
-
 - [ ] **WF-003** `[docs]` Make BACKLOG.md self-documenting for cold readers
   > Outsiders opening BACKLOG.md don't know what 🟠 means, what `[~]` means, or what `[code]` is for. Add a legend so the file reads cold without anyone chasing down references/.
   > AC: Seeded template includes a brief legend after the title — priority emojis, status markers, type tags, all explained inline in under ~15 lines. Update lands in `init-backlog.sh`. Existing backlogs are not touched (idempotency preserved). references/backlog-format.md remains the deeper spec.
@@ -43,6 +39,9 @@
 ## Blocked
 
 ## Done
+
+- [x] **WF-002** `[feat]` Add Status Report mode to /workflow with shareable visual current-state output
+  > Done: Added Mode: Status Report to SKILL.md with counts-per-tier table, in-progress and blocked lists, recent-done list. Triggers added to Detecting Intent table and frontmatter description (2026-04-26 19:40)
 
 - [x] **WF-001** `[chore]` Remove the VISION.md feature from the workflow skill
   > Done: Deleted VISION template + local copy, reverted init-backlog.sh and SKILL.md to BACKLOG-only, verified fresh init creates only BACKLOG.md (2026-04-26 19:29)

@@ -6,7 +6,7 @@
 
 ## 🟠 High
 
-- [ ] **WF-003** `[docs]` Make BACKLOG.md self-documenting for cold readers
+- [~] **WF-003** `[docs]` Make BACKLOG.md self-documenting for cold readers _(started: 2026-04-26 19:54)_
   > Outsiders opening BACKLOG.md don't know what 🟠 means, what `[~]` means, or what `[code]` is for. Add a legend so the file reads cold without anyone chasing down references/.
   > AC: Seeded template includes a brief legend after the title — priority emojis, status markers, type tags, all explained inline in under ~15 lines. Update lands in `init-backlog.sh`. Existing backlogs are not touched (idempotency preserved). references/backlog-format.md remains the deeper spec.
 

@@ -17,6 +17,10 @@ mkdir -p "$BACKLOG_DIR"
 cat > "$BACKLOG_FILE" << 'EOF'
 # Backlog
 
+> **Legend.** Priority: 🔴 Urgent · 🟠 High · 🟡 Normal · 🟢 Low. Status: `[ ]` pending · `[~]` in progress · `[!]` blocked · `[x]` done. Type tags: `[fix]` bug · `[feat]` new feature · `[code]` refactor · `[test]` tests · `[docs]` documentation · `[chore]` config/deps · `[research]` investigation · `[review]` code review.
+>
+> **How it works.** `/workflow` picks the highest pending task, creates a `wf/NNN-slug` branch in a worktree at `.worktrees/`, does the work, marks `[x]`. Branches await your manual merge. Full spec: `~/.claude/skills/workflow/SKILL.md`.
+
 <!-- empty-checks: 0 -->
 
 ## 🔴 Urgent

@@ -6,10 +6,6 @@
 
 ## 🟠 High
 
-- [~] **WF-003** `[docs]` Make BACKLOG.md self-documenting for cold readers _(started: 2026-04-26 19:54)_
-  > Outsiders opening BACKLOG.md don't know what 🟠 means, what `[~]` means, or what `[code]` is for. Add a legend so the file reads cold without anyone chasing down references/.
-  > AC: Seeded template includes a brief legend after the title — priority emojis, status markers, type tags, all explained inline in under ~15 lines. Update lands in `init-backlog.sh`. Existing backlogs are not touched (idempotency preserved). references/backlog-format.md remains the deeper spec.
-
 - [ ] **WF-008** `[docs]` Document the "evaluate-then-write" learnings rule in skill docs (not memory)
   > User principle: durable knowledge about how the workflow operates lives in git-tracked docs, not in `~/.claude/projects/.../memory/`. Memory is per-user, hidden, and not portable; docs are visible to collaborators, versioned, and survive session/machine changes. The rule applies to every cycle: evaluate for a non-obvious lesson, write it as documentation when one exists, skip when it doesn't.
   > AC: A new step or subsection lands in `~/.claude/skills/workflow/SKILL.md` (or `references/execution-guide.md`) describing the cycle-end evaluation, what counts as memory-worthy ("would future-me, in a different session, want this fact and not be able to derive it from code, git log, or CLAUDE.md?"), and where each kind of lesson goes (skill SKILL.md / references for behavior, project-level CLAUDE.md for project facts, never per-user memory). The "what NOT to save" list from CLAUDE.md is referenced or restated. Future cycles must follow this rule.
@@ -39,6 +35,9 @@
 ## Blocked
 
 ## Done
+
+- [x] **WF-003** `[docs]` Make BACKLOG.md self-documenting for cold readers
+  > Done: Added a two-line Legend (priority/status/type tags + lifecycle summary) to the heredoc in init-backlog.sh. Cold readers can grasp the file without chasing references/. Verified idempotency on existing backlogs (2026-04-26 19:56)
 
 - [x] **WF-009** `[feat]` Add branch + worktree creation to /workflow Execute mode
   > Done: Added Per-task Workspace section to SKILL.md, updated Execute Step 2/3/7 for branch+worktree flow, added matching detail to references/execution-guide.md, added `.worktrees/` to .gitignore. Bootstrap commit on main; future tasks branch from main HEAD per the new rule (2026-04-26 19:51)

@@ -40,6 +40,9 @@
 
 ## Done
 
+- [x] **WF-009** `[feat]` Add branch + worktree creation to /workflow Execute mode
+  > Done: Added Per-task Workspace section to SKILL.md, updated Execute Step 2/3/7 for branch+worktree flow, added matching detail to references/execution-guide.md, added `.worktrees/` to .gitignore. Bootstrap commit on main; future tasks branch from main HEAD per the new rule (2026-04-26 19:51)
+
 - [x] **WF-002** `[feat]` Add Status Report mode to /workflow with shareable visual current-state output
   > Done: Added Mode: Status Report to SKILL.md with counts-per-tier table, in-progress and blocked lists, recent-done list. Triggers added to Detecting Intent table and frontmatter description (2026-04-26 19:40)
 

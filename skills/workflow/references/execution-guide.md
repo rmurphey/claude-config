@@ -4,6 +4,27 @@ Detailed reference for task assessment, execution approach by complexity and typ
 
 ---
 
+## Per-task Workspace
+
+See SKILL.md "Per-task Workspace" for the full convention. Operational details:
+
+**Slug derivation**: lowercase the title; drop articles ("a", "the", "to"); replace runs of whitespace with a single dash; truncate to ~3 meaningful words. Example: "Add Status Report mode to /workflow with shareable visual current-state output" → `add-status-report-mode`.
+
+**Branch and worktree at claim**:
+```bash
+git branch wf/NNN-slug main
+git worktree add ./.worktrees/wf-NNN-slug wf/NNN-slug
+cd ./.worktrees/wf-NNN-slug
+```
+
+**Branch name collisions**: if `wf/NNN-slug` already exists, abort with a clear error — do not auto-recover. Orphan recovery is WF-007's territory.
+
+**Reading BACKLOG.md authoritatively**: Step 2 reads `main`'s working tree `BACKLOG.md` to pick the next task. The pick must skip any task whose `wf/NNN-*` branch already exists (in flight, blocked, or completed-but-unmerged).
+
+**Done commit**: Step 7 commits the BACKLOG.md `[x]` update on the task's branch. The branch is left for the user to merge — no auto-merge to `main`.
+
+---
+
 ## Complexity Assessment
 
 Read the full task entry — title, context, acceptance criteria — before assigning complexity. When in doubt, go one level up (safer to over-invest than under-execute).

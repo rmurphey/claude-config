@@ -197,8 +197,9 @@ If the task entry contains `[push]` or the user has previously indicated this ta
 (Still in the worktree, on the task's branch.)
 
 **On success:**
+- Capture the work commit's short SHA: run `git rev-parse --short HEAD`. If `git rev-parse HEAD` equals `git rev-parse main` (the branch produced no work commit — rare, e.g. a `[review]` task with nothing to commit), there is no SHA. Otherwise `HEAD` is the work commit Step 6 just produced.
 - Change `[~]` to `[x]` on the task line.
-- Append below the task: `> Done: <one-sentence summary of what changed> (TIMESTAMP)`
+- Append below the task: `> Done: <one-sentence summary of what changed> (TIMESTAMP[, SHORT_SHA])`. Include the SHA after the timestamp, comma-separated. Omit if no SHA was captured.
 - Move the completed entry to the `## Done` section (prepend; keep last 20 only).
 - Reset empty-checks counter.
 - Commit on the branch: `git add BACKLOG.md && git commit -m "chore: WF-NNN done"`.

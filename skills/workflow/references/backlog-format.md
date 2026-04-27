@@ -107,8 +107,10 @@ The Done section holds completed tasks, newest first. Keep the last 20. When add
 
 ```
 - [x] **WF-004** `[fix]` Correct typo in forecast.js
-  > Done: Corrected "temperture" → "temperature" in forecast.js:42 (2026-04-26T11:30:00Z)
+  > Done: Corrected "temperture" → "temperature" in forecast.js:42 (2026-04-26T11:30:00Z, deadbee)
 ```
+
+The `deadbee` is the short SHA of the work commit produced in Step 6 — captured by Execute mode and appended to the Done line, comma-separated after the timestamp. If the task closed without a work commit (rare; typically a `[review]` task that produced no code), the SHA is omitted and only the timestamp appears.
 
 ---
 

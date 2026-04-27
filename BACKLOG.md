@@ -20,7 +20,7 @@
   > Items not yet ripe for execution don't fit the four operational tiers. Without a holding pen, they pollute 🟢 Low or live as floating notes. A dedicated tier keeps them in the same source of truth without competing with active work.
   > AC: New section between 🟢 Low and "In Progress", e.g. `## 💭 Wishlist`. Execute mode skips this tier when picking the next task. "add to wishlist" / "promote to backlog" trigger phrases route correctly. Documented in references/backlog-format.md and the WF-003 legend.
 
-- [ ] **WF-005** `[feat]` Append commit short SHA to Done entries on task completion
+- [~] **WF-005** `[feat]` Append commit short SHA to Done entries on task completion _(started: 2026-04-27 13:51)_
   > Today the Done line records what changed but not where to look in git. Adding the short SHA gives collaborators a one-click trace from a BACKLOG entry to its commit.
   > AC: Execute mode captures the short SHA produced by `/commit` and appends it to the `> Done: ...` line, e.g. `> Done: ... (2026-04-26 14:02, deadbee)`. Tasks that close without a commit (rare) get no SHA. Surfaces in Status Report mode (WF-002).
 

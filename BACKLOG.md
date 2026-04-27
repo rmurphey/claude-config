@@ -16,10 +16,6 @@
 
 ## 🟡 Normal
 
-- [~] **WF-004** `[feat]` Add a Wishlist tier to BACKLOG.md _(started: 2026-04-27 13:45)_
-  > Items not yet ripe for execution don't fit the four operational tiers. Without a holding pen, they pollute 🟢 Low or live as floating notes. A dedicated tier keeps them in the same source of truth without competing with active work.
-  > AC: New section between 🟢 Low and "In Progress", e.g. `## 💭 Wishlist`. Execute mode skips this tier when picking the next task. "add to wishlist" / "promote to backlog" trigger phrases route correctly. Documented in references/backlog-format.md and the WF-003 legend.
-
 - [ ] **WF-005** `[feat]` Append commit short SHA to Done entries on task completion
   > Today the Done line records what changed but not where to look in git. Adding the short SHA gives collaborators a one-click trace from a BACKLOG entry to its commit.
   > AC: Execute mode captures the short SHA produced by `/commit` and appends it to the `> Done: ...` line, e.g. `> Done: ... (2026-04-26 14:02, deadbee)`. Tasks that close without a commit (rare) get no SHA. Surfaces in Status Report mode (WF-002).
@@ -39,6 +35,9 @@
 ## Blocked
 
 ## Done
+
+- [x] **WF-004** `[feat]` Add a Wishlist tier to BACKLOG.md
+  > Done: New ## 💭 Wishlist section in seeded template, new Mode: Wishlist (add/show/promote with tier-from-phrasing, default 🟡 Normal), Execute/List/Status Report updated, references/backlog-format.md documents the new tier and promote semantics. Legend update deferred (cross-branch dependency on WF-003) (2026-04-27 13:48)
 
 - [x] **WF-009** `[feat]` Add branch + worktree creation to /workflow Execute mode
   > Done: Added Per-task Workspace section to SKILL.md, updated Execute Step 2/3/7 for branch+worktree flow, added matching detail to references/execution-guide.md, added `.worktrees/` to .gitignore. Bootstrap commit on main; future tasks branch from main HEAD per the new rule (2026-04-26 19:51)

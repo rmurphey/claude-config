@@ -26,7 +26,7 @@
 
 ## 🟢 Low
 
-- [ ] **WF-006** `[feat]` Flag stale `[~]` tasks in Status mode
+- [~] **WF-006** `[feat]` Flag stale `[~]` tasks in Status mode _(started: 2026-04-27 14:00)_
   > A task left in `[~]` for days is usually forgotten in-progress work, not active work. Surface it so the user can decide whether to resume, block, or cancel.
   > AC: Status mode marks any `[~]` older than a threshold (default 7 days, single named constant) with a `⏳ stale` indicator. Status Report mode (WF-002) surfaces stale items as a separate sub-list.
 

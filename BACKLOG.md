@@ -26,10 +26,6 @@
 
 ## 🟢 Low
 
-- [~] **WF-006** `[feat]` Flag stale `[~]` tasks in Status mode _(started: 2026-04-27 14:00)_
-  > A task left in `[~]` for days is usually forgotten in-progress work, not active work. Surface it so the user can decide whether to resume, block, or cancel.
-  > AC: Status mode marks any `[~]` older than a threshold (default 7 days, single named constant) with a `⏳ stale` indicator. Status Report mode (WF-002) surfaces stale items as a separate sub-list.
-
 - [ ] **WF-007** `[feat]` Handle orphan `[~]` tasks on Execute pickup
   > If a prior session crashed, was interrupted, or otherwise left a `[~]` claim without finishing, today's Execute Step 2 silently skips it (it's not `[ ]` and not `[!]`). The task gets stuck. Need an explicit policy: detect orphan `[~]` at pickup and choose a safe action.
   > AC: Execute Step 2 detects any `[~]` not started in the current session. Behavior: reset to `[ ]` if no progress evidence in git, OR mark `[!]` with a "session crashed mid-task — verify state and resume" blocker. Choice documented in SKILL.md. Distinct from WF-006 (which only surfaces staleness in Status mode without acting on it).
@@ -39,6 +35,9 @@
 ## Blocked
 
 ## Done
+
+- [x] **WF-006** `[feat]` Flag stale `[~]` tasks in Status mode
+  > Done: Added STALE_THRESHOLD_DAYS = 7 named once in Mode: Status; Status mode prefixes stale [~] with ⏳ stale —; Status Report adds a Stale in progress sub-list. Surface only — no interactive resolution (WF-007 territory) (2026-04-27 14:02, b7a099e)
 
 - [x] **WF-009** `[feat]` Add branch + worktree creation to /workflow Execute mode
   > Done: Added Per-task Workspace section to SKILL.md, updated Execute Step 2/3/7 for branch+worktree flow, added matching detail to references/execution-guide.md, added `.worktrees/` to .gitignore. Bootstrap commit on main; future tasks branch from main HEAD per the new rule (2026-04-26 19:51)

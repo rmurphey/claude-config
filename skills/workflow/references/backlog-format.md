@@ -25,6 +25,8 @@
 
 ## 🟢 Low
 
+## 💭 Wishlist
+
 ## In Progress
 
 ## Blocked
@@ -86,6 +88,18 @@ Tasks live under one of four priority sections. Place each new task under the co
 - `## 🟠 High` — important, should be done soon
 - `## 🟡 Normal` — default priority for most tasks
 - `## 🟢 Low` — nice to have, no deadline
+
+---
+
+## Wishlist Tier
+
+The `## 💭 Wishlist` section holds items that aren't ripe for execution — ideas, possibilities, things someone might want to do later. Wishlist items have **no priority tier**.
+
+- Execute mode does **not** pick from Wishlist.
+- List mode does **not** show Wishlist (use the "show wishlist" trigger instead).
+- Status Report adds a single count line below its table: `Wishlist (not yet ripe): N`.
+
+To move an item out of Wishlist into the operational backlog, use a "promote" trigger: `promote WF-NNN [to <tier>]`. The target tier is parsed from the phrasing — "urgent" / "high" / "normal" / "low" (or the matching emoji) — and defaults to 🟡 Normal if unspecified.
 
 ---
 

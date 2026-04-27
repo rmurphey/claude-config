@@ -16,7 +16,7 @@
 
 ## 🟡 Normal
 
-- [ ] **WF-004** `[feat]` Add a Wishlist tier to BACKLOG.md
+- [~] **WF-004** `[feat]` Add a Wishlist tier to BACKLOG.md _(started: 2026-04-27 13:45)_
   > Items not yet ripe for execution don't fit the four operational tiers. Without a holding pen, they pollute 🟢 Low or live as floating notes. A dedicated tier keeps them in the same source of truth without competing with active work.
   > AC: New section between 🟢 Low and "In Progress", e.g. `## 💭 Wishlist`. Execute mode skips this tier when picking the next task. "add to wishlist" / "promote to backlog" trigger phrases route correctly. Documented in references/backlog-format.md and the WF-003 legend.
 

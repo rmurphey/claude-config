@@ -203,6 +203,7 @@ If the task entry contains `[push]` or the user has previously indicated this ta
 - Reset empty-checks counter.
 - Commit on the branch: `git add BACKLOG.md && git commit -m "chore: WF-NNN done"`.
 - The branch sits awaiting user merge. The worktree stays.
+- Run the cycle-learning check (see § Cycle Learning).
 
 **On block:**
 - Change `[~]` to `[!]` on the task line.
@@ -218,10 +219,41 @@ If the task entry contains `[push]` or the user has previously indicated this ta
 
 ---
 
+## Cycle Learning
+
+After every task closes (Step 7), evaluate whether the cycle produced a non-obvious lesson that future sessions would want.
+
+**The filter question:** *"Would future-me, in a different session, want this fact and not be able to derive it from code, git log, or CLAUDE.md?"*
+
+If **no** — most cycles end here. Move on. The work is in the commits; the context is in the commit message.
+
+If **yes** — document it where it'll be found:
+
+| Kind of lesson | Goes in |
+|----------------|---------|
+| User correction or surprising preference about how I should work | `~/.claude/CLAUDE.md` (global) or the relevant skill's `SKILL.md` (skill-scoped) |
+| Project-specific decision/constraint that won't be visible from inspection | Project-level `CLAUDE.md` or notes file at the project root |
+| Skill internals, gotchas, or behavior rules | The skill's `SKILL.md` or `references/` files |
+| Pointer to an external system (dashboard, ticket project, runbook) | Project-level docs |
+
+**Never use per-user memory** (`~/.claude/projects/.../memory/`). Memory is hidden from collaborators, not portable across machines, and not git-tracked. Documentation is.
+
+**Don't write a "lesson" for** (per CLAUDE.md's "what NOT to save" list):
+- Files touched, agents invoked, time taken — derivable from `git log`
+- Fix recipes — the fix is in the code; the why is in the commit message
+- Conventions or architecture — derivable from current state
+- Anything already in CLAUDE.md
+- Ephemeral task or session state
+
+This filter keeps growth bounded by relevance, not by activity.
+
+---
+
 ## Rules
 
 - Never push without explicit human approval.
 - Never auto-merge a task branch — user merges manually.
+- Never write workflow learnings to per-user memory; document them in skill or project files instead. (See § Cycle Learning.)
 - Never mark `[x]` before verifying all acceptance criteria.
 - Never bypass `/commit` hooks.
 - Never guess when acceptance criteria are missing — block and ask.

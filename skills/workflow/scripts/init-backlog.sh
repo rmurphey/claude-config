@@ -31,6 +31,8 @@ cat > "$BACKLOG_FILE" << 'EOF'
 
 ## 🟢 Low
 
+## 💭 Wishlist
+
 ## In Progress
 
 ## Blocked

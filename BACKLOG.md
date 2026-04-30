@@ -8,10 +8,6 @@
 
 ## 🟡 Normal
 
-- [ ] **WF-004** `[feat]` Add a Wishlist tier to BACKLOG.md
-  > Items not yet ripe for execution don't fit the four operational tiers. Without a holding pen, they pollute 🟢 Low or live as floating notes. A dedicated tier keeps them in the same source of truth without competing with active work.
-  > AC: New section between 🟢 Low and "In Progress", e.g. `## 💭 Wishlist`. Execute mode skips this tier when picking the next task. "add to wishlist" / "promote to backlog" trigger phrases route correctly. Documented in references/backlog-format.md and the WF-003 legend.
-
 - [ ] **WF-005** `[feat]` Append commit short SHA to Done entries on task completion
   > Today the Done line records what changed but not where to look in git. Adding the short SHA gives collaborators a one-click trace from a BACKLOG entry to its commit.
   > AC: Execute mode captures the short SHA produced by `/commit` and appends it to the `> Done: ...` line, e.g. `> Done: ... (2026-04-26 14:02, deadbee)`. Tasks that close without a commit (rare) get no SHA. Surfaces in Status Report mode (WF-002).
@@ -31,6 +27,9 @@
 ## Blocked
 
 ## Done
+
+- [x] **WF-004** `[feat]` Add a Wishlist tier to BACKLOG.md
+  > Done: New ## 💭 Wishlist section in seeded template, new Mode: Wishlist (add/show/promote with tier-from-phrasing, default 🟡 Normal), Execute/List/Status Report updated, references/backlog-format.md documents the new tier and promote semantics. Legend update deferred (cross-branch dependency on WF-003) (2026-04-27 13:48)
 
 - [x] **WF-008** `[docs]` Document the "evaluate-then-write" learnings rule in skill docs (not memory)
   > Done: Added a Cycle Learning section to SKILL.md with the filter question, a kind→home table, the "never per-user memory" rule, and a re-statement of the "what NOT to save" list from CLAUDE.md. Step 7 references it; Rules section adds the "no per-user memory" rule (2026-04-26 20:01)

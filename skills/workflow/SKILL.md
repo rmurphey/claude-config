@@ -1,6 +1,6 @@
 ---
 name: workflow
-description: This skill should be used when the user asks to "add to the backlog", "add a task", "queue this", "remember to", "show the backlog", "list tasks", "what's pending", "work on the backlog", "work on next task", "keep going", "what's in progress", "what's blocked", "show blockers", "what's done", "recently completed", "status report", "show progress", or "backlog summary". Manages a project backlog at .claude/BACKLOG.md and executes tasks autonomously — Claude does the work, agents review it, skills handle commits and pushes.
+description: This skill should be used when the user asks to "add to the backlog", "add a task", "queue this", "remember to", "show the backlog", "list tasks", "what's pending", "work on the backlog", "work on next task", "keep going", "what's in progress", "what's blocked", "show blockers", "what's done", "recently completed", "status report", "show progress", "backlog summary", "add to wishlist", "wishlist this", "show wishlist", or "promote to backlog". Manages a project backlog at .claude/BACKLOG.md and executes tasks autonomously — Claude does the work, agents review it, skills handle commits and pushes.
 ---
 
 # workflow
@@ -50,6 +50,9 @@ Every Execute-mode task runs in its own branch and its own worktree. The split i
 | "what's in progress", "what's blocked", "show blockers" | **Status** |
 | "what's done", "recently completed", "show finished" | **Done** |
 | "status report", "show progress", "backlog summary" | **Status Report** |
+| "add to wishlist", "wishlist this" | **Wishlist** (add) |
+| "show wishlist", "what's in the wishlist" | **Wishlist** (show) |
+| "promote WF-NNN", "promote to backlog", "move WF-NNN to backlog" | **Wishlist** (promote) |
 
 ---
 
@@ -67,7 +70,7 @@ Every Execute-mode task runs in its own branch and its own worktree. The split i
 
 ## Mode: List
 
-Read `BACKLOG.md`. Display pending (`[ ]`) tasks grouped by priority tier (🔴 → 🟠 → 🟡 → 🟢). For each: ID, type tag, title, one-line context summary. Do not begin execution.
+Read `BACKLOG.md`. Display pending (`[ ]`) tasks grouped by priority tier (🔴 → 🟠 → 🟡 → 🟢). For each: ID, type tag, title, one-line context summary. The `## 💭 Wishlist` tier is intentionally hidden — surface it via "show wishlist" instead. Do not begin execution.
 
 ---
 
@@ -112,7 +115,38 @@ Output, in order:
 
 **Recently done** — last 5 from the Done section, newest first: `**WF-NNN** title — <one-line Done summary>`. If fewer than 5 exist, show all.
 
+**Wishlist** — single line below the table: `Wishlist (not yet ripe): N`, where N is the count of items in `## 💭 Wishlist`. Omit the line if N is 0.
+
 The digest is plain markdown — copy-pasteable into a PR description, issue, or chat. No interactive prompts in this mode.
+
+---
+
+## Mode: Wishlist
+
+Three sub-actions, dispatched by the user's phrasing.
+
+### Add to wishlist
+Triggers: "add to wishlist X", "wishlist this", "wishlist X"
+
+1. Run `bash ~/.claude/skills/workflow/scripts/init-backlog.sh`.
+2. Assign next ID (same logic as Add mode).
+3. Append the item to the `## 💭 Wishlist` section in `BACKLOG.md`. No priority tier inferred — wishlist items don't have one.
+4. Confirm: "Added **WF-NNN** to wishlist — title."
+
+### Show wishlist
+Triggers: "show wishlist", "what's in the wishlist"
+
+Read `BACKLOG.md`. Display items in the `## 💭 Wishlist` section. ID, type tag, title, one-line context summary.
+
+### Promote
+Triggers: "promote WF-NNN", "promote WF-NNN to <tier>", "move WF-NNN to backlog"
+
+1. Read `BACKLOG.md`. Find the item in `## 💭 Wishlist`.
+2. Parse target tier from the user's phrasing — look for "urgent" / "high" / "normal" / "low" (or 🔴 / 🟠 / 🟡 / 🟢). Default to 🟡 Normal if unspecified.
+3. Move the entry from Wishlist to the chosen tier section.
+4. Confirm: "Promoted **WF-NNN** to <tier>."
+
+The `## 💭 Wishlist` tier is **not** picked up by Execute mode and **not** shown by List mode. Status Report mode surfaces a single count line below its main table.
 
 ---
 
@@ -128,7 +162,7 @@ Read the `<!-- empty-checks: N -->` comment from `BACKLOG.md` to restore the emp
 
 ### Step 2 — Pick next task
 
-Read `BACKLOG.md` (on `main`). Find the first `[ ]` task in priority order: 🔴 → 🟠 → 🟡 → 🟢. Skip `[!]` blocked tasks. Skip any task whose `wf/NNN-*` branch already exists (`git branch --list 'wf/NNN-*'` returns a hit) — that task's work is on a branch awaiting merge.
+Read `BACKLOG.md` (on `main`). Find the first `[ ]` task in priority order: 🔴 → 🟠 → 🟡 → 🟢. Skip `[!]` blocked tasks. Skip any task in the `## 💭 Wishlist` tier — those must be promoted explicitly first. Skip any task whose `wf/NNN-*` branch already exists (`git branch --list 'wf/NNN-*'` returns a hit) — that task's work is on a branch awaiting merge.
 
 **If no pending tasks:**
 - Increment the empty-check counter. Update `<!-- empty-checks: N -->` in `BACKLOG.md`.

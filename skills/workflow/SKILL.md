@@ -76,14 +76,18 @@ Read `BACKLOG.md`. Display pending (`[ ]`) tasks grouped by priority tier (🔴 
 
 ## Mode: Status
 
+`STALE_THRESHOLD_DAYS = 7` — the single threshold for flagging long-running `[~]` tasks. Used by Status and Status Report modes.
+
 Read `BACKLOG.md`. Show:
-- In-progress (`[~]`): ID, title, when started
+- In-progress (`[~]`): ID, title, when started. Compute age from the `_(started: TIMESTAMP)_` suffix; if age ≥ `STALE_THRESHOLD_DAYS`, prefix the line with `⏳ stale —`.
 - Blocked (`[!]`): ID, title, blocker description
 
 For each blocked task, offer via `AskUserQuestion`:
 - **Provide answer** — append as `> User response: …` and change `[!]` back to `[ ]`
 - **Cancel** — change to `[x]`, append `> Cancelled by user`, move to Done section
 - **Leave blocked** — no change
+
+Stale `[~]` tasks are surfaced visually only — no interactive prompt. Resolution (resume, block, cancel, or auto-recovery on Execute pickup) is handled elsewhere; WF-006 only marks staleness so the user can decide.
 
 ---
 
@@ -110,6 +114,8 @@ Output, in order:
 | **Total** | N | N | N |
 
 **In progress** — for each `[~]` task, one line: `**WF-NNN** title — _started: TIMESTAMP_`. If none: `_None._`
+
+**Stale in progress** — sub-list of in-progress tasks whose age exceeds `STALE_THRESHOLD_DAYS` (see Mode: Status). For each: `⏳ **WF-NNN** title — _started: TIMESTAMP (N days)_`. If none: `_None._`
 
 **Blocked** — for each `[!]` task, one line: `**WF-NNN** title — Blocker: <one-line summary>`. If none: `_None._`
 

@@ -29,6 +29,9 @@ ide/
 # Downloads — binary/temporary artifacts
 downloads/
 
+# Image cache — UUID-keyed binary artifacts
+image-cache/
+
 # Remote settings — fetched from Anthropic, not user-authored
 remote-settings.json
 

@@ -6,10 +6,6 @@
 
 ## 🟠 High
 
-- [ ] **WF-008** `[docs]` Document the "evaluate-then-write" learnings rule in skill docs (not memory)
-  > User principle: durable knowledge about how the workflow operates lives in git-tracked docs, not in `~/.claude/projects/.../memory/`. Memory is per-user, hidden, and not portable; docs are visible to collaborators, versioned, and survive session/machine changes. The rule applies to every cycle: evaluate for a non-obvious lesson, write it as documentation when one exists, skip when it doesn't.
-  > AC: A new step or subsection lands in `~/.claude/skills/workflow/SKILL.md` (or `references/execution-guide.md`) describing the cycle-end evaluation, what counts as memory-worthy ("would future-me, in a different session, want this fact and not be able to derive it from code, git log, or CLAUDE.md?"), and where each kind of lesson goes (skill SKILL.md / references for behavior, project-level CLAUDE.md for project facts, never per-user memory). The "what NOT to save" list from CLAUDE.md is referenced or restated. Future cycles must follow this rule.
-
 ## 🟡 Normal
 
 - [ ] **WF-004** `[feat]` Add a Wishlist tier to BACKLOG.md
@@ -35,6 +31,9 @@
 ## Blocked
 
 ## Done
+
+- [x] **WF-008** `[docs]` Document the "evaluate-then-write" learnings rule in skill docs (not memory)
+  > Done: Added a Cycle Learning section to SKILL.md with the filter question, a kind→home table, the "never per-user memory" rule, and a re-statement of the "what NOT to save" list from CLAUDE.md. Step 7 references it; Rules section adds the "no per-user memory" rule (2026-04-26 20:01)
 
 - [x] **WF-003** `[docs]` Make BACKLOG.md self-documenting for cold readers
   > Done: Added a two-line Legend (priority/status/type tags + lifecycle summary) to the heredoc in init-backlog.sh. Cold readers can grasp the file without chasing references/. Verified idempotency on existing backlogs (2026-04-26 19:56)

@@ -10,15 +10,14 @@
 
 ## 🟢 Low
 
-- [ ] **WF-007** `[feat]` Handle orphan `[~]` tasks on Execute pickup
-  > If a prior session crashed, was interrupted, or otherwise left a `[~]` claim without finishing, today's Execute Step 2 silently skips it (it's not `[ ]` and not `[!]`). The task gets stuck. Need an explicit policy: detect orphan `[~]` at pickup and choose a safe action.
-  > AC: Execute Step 2 detects any `[~]` not started in the current session. Behavior: reset to `[ ]` if no progress evidence in git, OR mark `[!]` with a "session crashed mid-task — verify state and resume" blocker. Choice documented in SKILL.md. Distinct from WF-006 (which only surfaces staleness in Status mode without acting on it).
-
 ## In Progress
 
 ## Blocked
 
 ## Done
+
+- [x] **WF-007** `[feat]` Handle orphan `[~]` tasks on Execute pickup
+  > Done: Step 2 now does orphan recovery — empty-orphan branches are deleted (task re-enters queue), commit-bearing orphans become [!] on the branch with a "session crashed mid-task" blocker plus PushNotification. Step 3 hardened to require repo-root paths for worktree creation (2026-04-27 14:08, 0d3c9c8)
 
 - [x] **WF-006** `[feat]` Flag stale `[~]` tasks in Status mode
   > Done: Added STALE_THRESHOLD_DAYS = 7 named once in Mode: Status; Status mode prefixes stale [~] with ⏳ stale —; Status Report adds a Stale in progress sub-list. Surface only — no interactive resolution (WF-007 territory) (2026-04-27 14:02, b7a099e)

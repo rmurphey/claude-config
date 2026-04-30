@@ -168,7 +168,16 @@ Read the `<!-- empty-checks: N -->` comment from `BACKLOG.md` to restore the emp
 
 ### Step 2 — Pick next task
 
-Read `BACKLOG.md` (on `main`). Find the first `[ ]` task in priority order: 🔴 → 🟠 → 🟡 → 🟢. Skip `[!]` blocked tasks. Skip any task in the `## 💭 Wishlist` tier — those must be promoted explicitly first. Skip any task whose `wf/NNN-*` branch already exists (`git branch --list 'wf/NNN-*'` returns a hit) — that task's work is on a branch awaiting merge.
+Read `BACKLOG.md` (on `main`).
+
+**Orphan recovery (run before picking a task).** For every existing `wf/NNN-*` branch where the corresponding task on `main` is `[ ]` (not `[~]`/`[!]`/`[x]`), inspect the branch's view of that task with `git show wf/NNN-slug:BACKLOG.md`:
+
+- Task is `[x]` or `[!]` on the branch → done- or blocked-but-unmerged. **Not** an orphan. Leave alone; Step 2's branch-skip rule already skips it.
+- Task is `[~]` on the branch → orphan from a prior session. Recover based on `git rev-list main..wf/NNN-slug --count`:
+  - **0 commits** (empty orphan): `git worktree remove .worktrees/wf-NNN-slug` (force if needed), `git branch -D wf/NNN-slug`. Main's `[ ]` is untouched and the task is eligible to be picked normally below.
+  - **≥1 commit** (work was committed but the run never finished): on the branch, change `[~]` → `[!]` and append `> **Blocker:** session crashed mid-task — verify state and resume`. Commit `chore: WF-NNN orphan-blocked` on the branch. (Recreate the worktree if it's missing.) Send `PushNotification` "WF-NNN orphan recovered as blocked — review wf/NNN-slug." The branch-skip rule continues to skip the task; the user merges or discards manually.
+
+After orphan recovery, find the first `[ ]` task in priority order: 🔴 → 🟠 → 🟡 → 🟢. Skip `[!]` blocked tasks. Skip any task in the `## 💭 Wishlist` tier — those must be promoted explicitly first. Skip any task whose `wf/NNN-*` branch still exists (the not-orphan branches above) — that task's work is on a branch awaiting merge.
 
 **If no pending tasks:**
 - Increment the empty-check counter. Update `<!-- empty-checks: N -->` in `BACKLOG.md`.
@@ -180,12 +189,12 @@ Read `BACKLOG.md` (on `main`). Find the first `[ ]` task in priority order: 🔴
 ### Step 3 — Claim the task
 
 1. Derive the slug: lowercase, dash-separated, ~3 words from the task title (skip articles).
-2. From `main` at the repo root, create the branch and worktree:
+2. From the **repo root** (not from inside another worktree — relative `./` paths resolve against cwd), create the branch and worktree:
    ```bash
-   git branch wf/NNN-slug main
-   git worktree add ./.worktrees/wf-NNN-slug wf/NNN-slug
+   git -C <repo-root> branch wf/NNN-slug main
+   git -C <repo-root> worktree add <repo-root>/.worktrees/wf-NNN-slug wf/NNN-slug
    ```
-   If the branch already exists, abort with a clear error — do not auto-recover (orphan recovery is WF-007's territory).
+   If the branch already exists, Step 2's orphan recovery should have handled it; if you still hit "branch already exists" here, abort and re-run Step 2.
 3. Change directory into the worktree. **All subsequent steps (4–7) run there.**
 4. In the worktree's `BACKLOG.md`, change the task's `[ ]` to `[~]` and append ` _(started: TIMESTAMP)_` on the title line. Don't commit yet — Step 6's `/commit` will pick it up alongside the work.
 

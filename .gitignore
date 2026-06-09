@@ -64,6 +64,16 @@ node_modules/
 # Auto-generated policy file
 policy-limits.json
 
+# Personal/local settings overrides — machine-specific permissions, not for public sharing
+settings.local.json
+
+# Memory — accumulates personal and work context over time
+memory/
+
+# Skills installed via npx skills CLI — managed by ~/.agents/.skill-lock.json, reinstallable
+skills/find-skills
+skills/rwx
+
 # macOS
 .DS_Store
 

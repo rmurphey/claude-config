@@ -64,6 +64,15 @@ node_modules/
 # Auto-generated policy file
 policy-limits.json
 
+# Daemon and background job runtime state — machine-generated, not authored config
+daemon/
+daemon.log
+daemon.status.json
+jobs/
+.last-cleanup
+.last-update-result.json
+plugins/.last_inuse_sweep
+
 # Personal/local settings overrides — machine-specific permissions, not for public sharing
 settings.local.json
 

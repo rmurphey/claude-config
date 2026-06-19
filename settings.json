@@ -42,6 +42,7 @@
       "~/.claude/skills"
     ]
   },
+  "model": "opus[1m]",
   "hooks": {
     "PostToolUse": [
       {

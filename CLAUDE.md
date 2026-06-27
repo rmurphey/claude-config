@@ -84,6 +84,8 @@ If any item surfaces a concern, raise it before marking the work done.
 
 ## Writing standards — zero tolerance
 
+When writing or reviewing prose in my voice (essays, posts, longer-form professional writing), read `~/.claude/voice/STYLEGUIDE.md` (the positive voice model — modes, signature moves, sample passages) and `~/.claude/voice/bio.md` (author identity). Use the `voice-check` skill or `voice-authenticator` agent to vet a draft against it. The banned list below is the negative half of the same standard.
+
 Never use these phrases:
 - "the real question is"
 - "let's dive in" / "let's dive deeper" / "deep dive"

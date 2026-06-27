@@ -1,0 +1,5 @@
+# About Rebecca Murphey
+
+Rebecca is Principal AI Operations Lead for Engineering at Honeycomb.io. Before Honeycomb, she was Field CTO at Swarmia, where she was a key part of scaling the company from $1M to $6M ARR. She served as the public face of the company—authoring "Build: Elements of an Effective Software Organization," running the company podcast, contributing to the 2025 DORA report, and speaking at conferences and workshops. Her thought leadership directly drove major customer wins, and she consulted with hundreds of engineering leaders across organizations ranging from small startups to major public corporations.
+
+Before Swarmia, Rebecca led engineering teams focused on developer productivity at Stripe and Indeed, where she built and scaled productivity initiatives at some of the industry's most respected engineering organizations. This combination of hands-on leadership experience and strategic market perspective gives her unique pattern recognition: she has both built developer productivity functions at scale and studied what works across hundreds of organizations.

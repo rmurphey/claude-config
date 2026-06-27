@@ -48,6 +48,7 @@ plugins/blocklist.json
 plugins/install-counts-cache.json
 plugins/installed_plugins.json
 plugins/known_marketplaces.json
+plugins/plugin-catalog-cache.json
 mcp-needs-auth-cache.json
 
 # Python bytecode cache

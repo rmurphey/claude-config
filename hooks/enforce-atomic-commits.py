@@ -186,6 +186,11 @@ def check_bypass(input_data: dict) -> bool:
                     continue
 
                 content_blocks = entry.get('message', {}).get('content', [])
+                # A user message's content may be a plain string (bare-text turn)
+                # or a list of blocks. Normalize the string case so a typed
+                # "single commit" reply is scanned, not skipped.
+                if isinstance(content_blocks, str):
+                    content_blocks = [content_blocks]
                 if not isinstance(content_blocks, list):
                     continue
 

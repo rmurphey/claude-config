@@ -229,6 +229,12 @@
         "source": "git",
         "url": "https://github.com/DrCatHicks/learning-opportunities.git"
       }
+    },
+    "chrome-devtools-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "ChromeDevTools/chrome-devtools-mcp"
+      }
     }
   },
   "effortLevel": "medium",

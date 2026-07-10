@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+"""
+review-settings: Extract the permissions.allow list from a directory's Claude
+Code settings files and group the entries so consolidation candidates are easy
+to see.
+
+This does only the mechanical, reproducible part: locate the files, parse them,
+and group allow entries by tool and by their leading pattern segment. Deciding
+which groups are *worth* consolidating (and wording the recommendation) is left
+to the model that invokes this script.
+
+Usage:
+  review-settings [DIRECTORY]
+
+DIRECTORY defaults to the current working directory. Looks for
+`.claude/settings.json` and `.claude/settings.local.json` under it.
+
+Output: JSON on stdout with keys:
+  files   - {path, exists, error} for each settings file read
+  allow   - {file: [entries]} raw allow list per file
+  groups  - {"Tool(prefix)": [entries]} entries grouped by tool + leading token
+Exit codes:
+  0 = ran successfully
+  2 = usage error (bad directory)
+"""
+import json
+import re
+import sys
+from pathlib import Path
+
+
+def load(path: Path):
+    entry = {"path": str(path), "exists": path.exists(), "error": None, "parsed": None}
+    if not path.exists():
+        return entry
+    try:
+        entry["parsed"] = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as e:
+        entry["error"] = str(e)
+    return entry
+
+
+def group_key(entry: str) -> str:
+    """Group by tool name plus the first meaningful token of its pattern.
+
+    Bash(git add:*)      -> Bash(git)
+    Bash(npm run:*)      -> Bash(npm)
+    Read(~/.claude/**)   -> Read(~)
+    WebSearch            -> WebSearch
+    """
+    m = re.match(r"^([A-Za-z][\w-]*)\((.*)\)$", entry)
+    if not m:
+        return entry  # no pattern, e.g. WebSearch
+    tool, pattern = m.group(1), m.group(2)
+    # first meaningful token: the first non-empty segment when split on
+    # spaces, colons, and slashes (so leading ~/ or / don't yield an empty key)
+    segments = [s for s in re.split(r"[ :/]", pattern.strip()) if s]
+    token = segments[0] if segments else pattern.strip()
+    return f"{tool}({token})"
+
+
+def main():
+    target = Path(sys.argv[1]).expanduser() if len(sys.argv) > 1 else Path.cwd()
+    if not target.is_dir():
+        print(f"error: not a directory: {target}", file=sys.stderr)
+        sys.exit(2)
+
+    claude_dir = target if target.name == ".claude" else target / ".claude"
+    reads = {name: load(claude_dir / name)
+             for name in ("settings.json", "settings.local.json")}
+
+    allow = {}
+    groups = {}
+    for name, entry in reads.items():
+        parsed = entry.get("parsed")
+        if not isinstance(parsed, dict):
+            continue
+        perms = parsed.get("permissions") or {}
+        entries = perms.get("allow")
+        if not isinstance(entries, list):
+            continue
+        allow[name] = entries
+        for e in entries:
+            if not isinstance(e, str):
+                continue
+            groups.setdefault(group_key(e), []).append(e)
+
+    # Only keep groups with more than one entry — the consolidation candidates.
+    candidates = {k: sorted(v) for k, v in groups.items() if len(v) > 1}
+
+    print(json.dumps({
+        "claude_dir": str(claude_dir),
+        "files": [{"path": e["path"], "exists": e["exists"], "error": e["error"]}
+                  for e in reads.values()],
+        "allow": allow,
+        "consolidation_candidates": candidates,
+    }, indent=2))
+
+
+if __name__ == "__main__":
+    main()
